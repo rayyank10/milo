@@ -124,6 +124,7 @@ const defaultOptions = {
     hawks: 'Hawks',
     magento: 'Magento',
     marketo: 'Marketo',
+    milo: 'Milo',
     northstar: 'Northstar',
     workfront: 'Workfront',
   },
