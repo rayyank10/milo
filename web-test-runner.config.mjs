@@ -1,6 +1,8 @@
 import { importMapsPlugin } from '@web/dev-server-import-maps';
 
 export default {
+  nodeResolve: true,
+  basePath: 'de',
   coverageConfig: {
     exclude: [
       '**/mocks/**',

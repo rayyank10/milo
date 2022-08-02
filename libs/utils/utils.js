@@ -100,7 +100,9 @@ export async function loadBlock(block) {
   const section = block.closest('.section[data-status]');
   if (section) {
     const decoratedBlock = section.querySelector(':scope > [data-status]');
-    if (!decoratedBlock) { delete section.dataset.status; }
+    const prevSib = section.previousElementSibling;
+    if (!prevSib) { delete section.dataset.status; }
+    if (!decoratedBlock && prevSib && !prevSib.dataset.status) { delete section.dataset.status; }
   }
   return block;
 }
