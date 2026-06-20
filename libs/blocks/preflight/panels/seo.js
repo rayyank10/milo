@@ -283,7 +283,7 @@ export default function SEO() {
 
   return authErrorMessage.value ? html`
   <div class="preflight-auth-error"><p class="warning">${authErrorMessage.value}</p>
-    <button class="preflight-action" onclick=${handleAsoSignIn}>
+    <button class="preflight-action con-button" onclick=${handleAsoSignIn}>
       Sign in
     </button>
   </div>` : html`

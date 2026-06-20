@@ -95,24 +95,16 @@ function Preflight() {
 }
 
 function preloadAssets(el) {
-  return new Promise((resolve) => {
-    const { miloLibs, codeRoot } = getConfig();
-    const base = miloLibs || codeRoot;
-    const bg = createTag('img', { src: `${base}${IMG_PATH}/preflight-bg.png` });
-    const pic = createTag('picture', { class: 'bg-img' }, bg);
-    bg.addEventListener('load', () => {
-      resolve(pic);
-      el.insertAdjacentElement('afterbegin', pic);
-
-      // Lazily load other images
-      const check = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/check.svg` });
-      const expand = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/expand.svg` });
-      document.head.append(check, expand);
-    });
-  });
+  // Light theme: no dark background image needed.
+  // Lazily preload functional SVG assets used by panel rows.
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  const check = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/check.svg` });
+  const expand = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/expand.svg` });
+  document.head.append(check, expand);
 }
 
 export default async function init(el) {
-  await preloadAssets(el);
+  preloadAssets(el);
   render(html`<${Preflight} />`, el);
 }
