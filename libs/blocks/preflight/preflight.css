@@ -1,6 +1,12 @@
+/* Preflight light-theme custom properties — all values reference Milo design tokens from styles.css */
 :root {
-  --notch-size: 12px;
-  --action-color: #FF1593;
+  --preflight-surface: var(--color-white, #FFF);
+  --preflight-surface-alt: var(--color-gray-100, #F8F8F8);
+  --preflight-border: var(--color-gray-200, #E8E8E8);
+  --preflight-text: var(--color-gray-800, #242424);
+  --preflight-text-secondary: var(--color-gray-600, #686868);
+  --preflight-accent: var(--color-accent, rgb(59, 99, 251));
+  --preflight-accent-hover: var(--color-accent-hover, rgb(39, 77, 234));
 }
 
 #preflight .fragment,
@@ -16,10 +22,9 @@
   z-index: 0;
 }
 
+/* bg-img is hidden in the light theme; the modal shell provides the white surface */
 .preflight > .bg-img {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  display: none;
 }
 
 .preflight > .bg-img img {
@@ -38,9 +43,12 @@
   max-width: calc(84vw - 40px);
   height: 680px;
   max-height: calc(100vh - 40px);
-  background: none;
-  color: #FFF;
+  background: var(--preflight-surface);
+  color: var(--preflight-text);
   overflow: hidden;
+  border: 1px solid var(--preflight-border);
+  border-radius: 4px;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 12%);
 }
 
 .preflight-tab-panel {
@@ -49,13 +57,15 @@
 }
 
 .preflight-tab-panel a {
-  color: #fff;
+  color: var(--preflight-accent);
 }
 
 .preflight-heading {
   display: flex;
   align-items: end;
   padding: 24px;
+  background: var(--preflight-surface);
+  border-bottom: 1px solid var(--preflight-border);
 }
 
 .preflight-content {
@@ -69,6 +79,7 @@ p#preflight-title {
   font-size: 38px;
   text-transform: uppercase;
   line-height: 1;
+  color: var(--preflight-text);
 }
 
 div.preflight-tab-button-group {
@@ -80,20 +91,21 @@ button.preflight-tab-button {
   border: none;
   background: none;
   font-family: var(--body-font-family);
-  color: #FFF;
+  color: var(--preflight-text);
   font-size: 24px;
   margin: 0 18px 0 0;
   padding: 0;
   line-height: 1;
   display: block;
   position: relative;
+  cursor: pointer;
 }
 
 button.preflight-tab-button[aria-selected="true"]::after {
   display: block;
   content: '';
   height: 4px;
-  background: #FFF;
+  background: var(--preflight-accent);
   margin-top: 6px;
   position: absolute;
   width: 100%;
@@ -155,7 +167,7 @@ p.preflight-content-heading-edit {
 }
 
 .preflight-group-row.preflight-group-detail:hover {
-  background-color: rgb(0 0 0 / 20%);
+  background-color: var(--preflight-surface-alt);
   cursor: pointer;
 }
 
@@ -258,7 +270,7 @@ p.preflight-date-wrapper .disabled-publish {
 }
 
 .preflight-group-row a {
-  color: #FFF;
+  color: var(--preflight-accent);
 }
 
 span.preflight-time {
@@ -274,7 +286,8 @@ span.preflight-time {
   left: 0;
   right: 0;
   padding: 24px;
-  background: linear-gradient(0deg, rgb(255 255 255 / 10%) 0%, rgb(255 255 255 / 0%) 100%);
+  background: linear-gradient(0deg, var(--preflight-surface) 60%, rgb(255 255 255 / 0%) 100%);
+  border-top: 1px solid var(--preflight-border);
 }
 
 #select-action {
@@ -289,21 +302,33 @@ span.preflight-time {
   grid-area: publish;
 }
 
+/* .preflight-action now mirrors Milo con-button styling; --action-color:#FF1593 removed */
 .preflight-action {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
-  background: var(--action-color);
-  color: #FFF;
+  background: var(--preflight-accent);
+  color: var(--color-white, #FFF);
   font-weight: 700;
-  outline: transparent solid 0;
-  transition: outline 300ms;
+  outline: transparent solid 2px;
+  outline-offset: 2px;
+  transition: background 200ms, outline 200ms;
   border: none;
+  border-radius: 20px;
   height: 36px;
   font-family: var(--body-font-family);
   font-size: 16px;
   padding: 0 18px;
-  clip-path: polygon(0% 0%, var(--notch-size) 0%, calc(100% - var(--notch-size)) 0%, 100% var(--notch-size), 100% calc(100% - var(--notch-size)), 100% 100%, 0% 100%, 0% 100%);
+  text-decoration: none;
+}
+
+.preflight-action:hover {
+  background: var(--preflight-accent-hover);
+}
+
+.preflight-action:focus-visible {
+  outline-color: var(--preflight-accent);
 }
 
 .tooltip {
@@ -321,8 +346,9 @@ span.preflight-time {
   max-width: 157px;
   padding: 10px;
   border-radius: 4px;
-  background: white;
-  color: var(--action-color);
+  background: var(--preflight-surface);
+  border: 1px solid var(--preflight-border);
+  color: var(--preflight-accent);
   text-align: center;
   font-size: 14px;
   font-weight: 400;
@@ -330,6 +356,7 @@ span.preflight-time {
   transition: opacity 0.3s, visibility 0.3s;
   visibility: hidden;
   line-height: 19px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
 }
 
 .tooltip::after {
@@ -338,8 +365,8 @@ span.preflight-time {
   right: 69%;
   position: absolute;
   margin: 12px 1px 0;
-  border: 5px solid white;
-  border-color: white transparent transparent;
+  border: 5px solid var(--preflight-surface);
+  border-color: var(--preflight-surface) transparent transparent;
   opacity: 0;
   transition: 200ms;
   visibility: hidden;

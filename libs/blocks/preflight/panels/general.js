@@ -380,16 +380,16 @@ export default function General() {
     <div class=preflight-actions>
       ${hasPage && html`
         <div id=select-action class=preflight-action-wrapper>
-          <button class=preflight-action onClick=${() => toggleSelect(checked)}>${selectStyle}</button>
+          <button class="preflight-action con-button" onClick=${() => toggleSelect(checked)}>${selectStyle}</button>
         </div>
       `}
       ${checked && html`
         <div id=preview-action class=preflight-action-wrapper>
-          <button class=preflight-action onClick=${() => handleAction('preview')}>Preview</button>
+          <button class="preflight-action con-button" onClick=${() => handleAction('preview')}>Preview</button>
         </div>
         ${!!publishable && html`
           <div id=publish-action class="preflight-action-wrapper${tooltip ? ' tooltip' : ''}" data-tooltip=${tooltip}>
-            <button class="preflight-action" onClick=${() => handleAction('live')}>
+            <button class="preflight-action con-button" onClick=${() => handleAction('live')}>
               Publish
             </button>
           </div>
