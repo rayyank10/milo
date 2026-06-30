@@ -1,0 +1,12 @@
+# How the harness turns a branch + page into a live preview URL for Milo.
+#
+# Milo runs on Adobe Edge Delivery Services, where any branch is served at
+# `<branch>--milo--<owner>.aem.page`. The visual gate substitutes {branch} and
+# {page} into pin_pattern, then captures screenshots of the result. For this
+# fork the owner is `antonio-rmrz`; `martech=off` keeps analytics out of the shot.
+#
+# Live capture requires the fork to be connected to AEM Code Sync. An alternative
+# that overlays this branch's libs onto a consumer site is the milolibs form:
+#   '<consumer-host>{page}?milolibs={branch}--milo--antonio-rmrz'
+mechanism: aem-branch-preview
+pin_pattern: 'https://{branch}--milo--antonio-rmrz.aem.page{page}?martech=off'

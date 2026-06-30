@@ -1,0 +1,49 @@
+# Milo's verification gates.
+#
+# When this file is present the harness runs THESE gates in place of its
+# built-in default set. Each gate binds to a platform-owned template
+# (command | coverage | visual) and supplies the parameters. The harness
+# substitutes {changed_files} / {test_files} into commands and runs them in
+# the worktree.
+#
+# Note: Milo's block-structure check used to be hardcoded inside the harness.
+# It is re-declared here as a `command` gate so the harness can stay generic —
+# nothing Milo-specific needs to live in the harness anymore.
+gates:
+  lint:
+    template: command
+    name: ESLint (no warnings)
+    cmd: npx eslint {changed_files} --max-warnings 0
+    blocking: true
+    failure_route: repair_loop
+
+  unit-tests:
+    template: command
+    name: Web Test Runner unit tests
+    cmd: npx web-test-runner {test_files} --node-resolve
+    timeout_s: 300
+    blocking: true
+    failure_route: repair_loop
+
+  block-structure:
+    template: command
+    name: Block structure (.js + .css per changed block)
+    description: >-
+      Every changed libs/blocks/<name>/ must contain both <name>.js and
+      <name>.css. Catches a block shipped with only one of the pair, which
+      renders broken in production even when tests pass.
+    cmd: node .fiesta/scripts/check-block-structure.mjs {changed_files}
+    blocking: true
+    failure_route: repair_loop
+
+  visual:
+    template: visual
+    name: Visual evidence (Send to CaaS tool)
+    page: /tools/send-to-caas
+    breakpoints: [900, 1200]
+    criteria: >-
+      The page renders without layout breakage or overlapping elements at each
+      breakpoint, and any restyled block matches the intended design (correct
+      spacing, colors, and typography). No visible error or empty states.
+    require_human: true
+    blocking: true
