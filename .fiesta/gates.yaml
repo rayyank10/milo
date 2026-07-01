@@ -39,7 +39,7 @@ gates:
   visual:
     template: visual
     name: Visual evidence (Send to CaaS tool)
-    page: /tools/send-to-caas
+    page: /
     breakpoints: [900, 1200]
     criteria: >-
       The page renders without layout breakage or overlapping elements at each
