@@ -17,6 +17,16 @@ gates:
     blocking: true
     failure_route: repair_loop
 
+  # Milo's second eslint config flags browser APIs unsafe across its target
+  # browser matrix (e.g. Array.at on old Safari) — the standard lint run does
+  # not pick it up, and GitHub CI would red-x the PR after the fact.
+  compat-lint:
+    template: command
+    name: Browser-compat ESLint
+    cmd: npx --no-install eslint --no-eslintrc -c .eslintrc-code-compatibility.js {js_files} --quiet
+    blocking: true
+    failure_route: repair_loop
+
   unit-tests:
     template: command
     name: Web Test Runner unit tests
