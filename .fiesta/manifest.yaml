@@ -13,6 +13,4 @@ owners_from: CODEOWNERS
 # registry at run time (see .fiesta/README.md).
 mental_models:
   use:
-    - milo-blocks
-    - milo-decoration
-    - eds-content-model
+    - milo-core

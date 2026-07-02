@@ -13,7 +13,7 @@ gates:
   lint:
     template: command
     name: ESLint (no warnings)
-    cmd: npx eslint {changed_files} --max-warnings 0
+    cmd: npx eslint {js_files} --max-warnings 0
     blocking: true
     failure_route: repair_loop
 
