@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Preflight Demo — fiesta visual gate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="icon" href="data:,">
+    <!--
+      Renders the Preflight modal exactly the way the sidekick does
+      (libs/utils/sidekick.js: loadBlock(div.preflight) + getModal), from THIS
+      checkout's code — so the fiesta visual gate (and a human) can see the
+      modal produced by the change under review, with no remote content needed.
+    -->
+    <script type="module">
+      import { setConfig, loadBlock, createTag } from '/libs/utils/utils.js';
+      setConfig({ codeRoot: '/libs' });
+      const { getModal } = await import('/libs/blocks/modal/modal.js');
+      const preflight = createTag('div', { class: 'preflight' });
+      const content = await loadBlock(preflight);
+      getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
+    </script>
+  </head>
+  <body></body>
+</html>

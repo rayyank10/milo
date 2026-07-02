@@ -48,8 +48,8 @@ gates:
 
   visual:
     template: visual
-    name: Visual evidence (Send to CaaS tool)
-    page: /
+    name: Visual evidence (Preflight modal demo)
+    page: /tools/preflight-demo.html
     breakpoints: [900, 1200]
     criteria: >-
       The page renders without layout breakage or overlapping elements at each
