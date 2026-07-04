@@ -48,14 +48,19 @@ gates:
 
   visual:
     template: visual
-    name: Visual evidence (Preflight modal demo)
-    page: /tools/preflight-demo.html
+    name: Visual evidence (ticket-declared targets)
+    # No default page: the surface under review is ticket-scoped. Each ticket
+    # declares its capture targets (visual_targets: [{page, mechanism}]);
+    # mechanism `pin` serves the branch directly, `overlay` renders a
+    # content-bus page with this branch's code via preview.yaml's
+    # overlay_pattern. A ticket with no declared visual surface skips this
+    # gate honestly instead of being judged on an unrelated page.
     breakpoints: [900, 1200]
     criteria: >-
       The page renders without layout breakage or overlapping elements at each
       breakpoint, and any restyled block matches the intended design (correct
       spacing, colors, and typography). No visible error or empty states.
-      The preflight checks on this demo page legitimately show in-progress
-      "Checking..." states — treat those as expected, not as errors.
+      If the target is the preflight demo page, its checks legitimately show
+      in-progress "Checking..." states — treat those as expected, not errors.
     require_human: true
     blocking: true

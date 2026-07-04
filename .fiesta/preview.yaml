@@ -5,8 +5,11 @@
 # {page} into pin_pattern, then captures screenshots of the result. For this
 # fork the owner is `antonio-rmrz`; `martech=off` keeps analytics out of the shot.
 #
-# Live capture requires the fork to be connected to AEM Code Sync. An alternative
-# that overlays this branch's libs onto a consumer site is the milolibs form:
-#   '<consumer-host>{page}?milolibs={branch}--milo--antonio-rmrz'
+# Live capture requires the fork to be connected to AEM Code Sync.
 mechanism: aem-branch-preview
 pin_pattern: 'https://{branch}--milo--antonio-rmrz.aem.page{page}?martech=off'
+# Content-bus pages (most real Milo pages) can't be served from a git branch;
+# the milolibs overlay renders the consumer page with THIS branch's code.
+# Used by visual targets that declare mechanism: overlay. Captures are
+# read-only against the consumer host.
+overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}--milo--antonio-rmrz&martech=off'
