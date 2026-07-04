@@ -13,3 +13,18 @@ pin_pattern: 'https://{branch}--milo--antonio-rmrz.aem.page{page}?martech=off'
 # Used by visual targets that declare mechanism: overlay. Captures are
 # read-only against the consumer host.
 overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}--milo--antonio-rmrz&martech=off'
+
+# Known-good capture surfaces. When a ticket declares no visual_targets, the
+# harness reads ONLY these ids + descriptions (progressive disclosure) and asks
+# a small model which surface best exercises the change — it can only pick from
+# this list, and "none fit" skips the gate honestly. Add an entry per block or
+# area you want visually verifiable; `match` is an optional changed-files hint.
+surfaces:
+  - id: preflight-demo
+    page: /tools/preflight-demo.html
+    mechanism: pin
+    description: >-
+      The Preflight modal demo tool. Exercises libs/blocks/preflight — the
+      modal chrome, tab panels, check items, and their spacing, typography,
+      and design-token styling. Its checks show "Checking..." while running.
+    match: 'libs/blocks/preflight/**'
