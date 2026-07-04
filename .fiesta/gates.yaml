@@ -56,6 +56,9 @@ gates:
     # overlay_pattern. A ticket with no declared visual surface skips this
     # gate honestly instead of being judged on an unrelated page.
     breakpoints: [900, 1200]
+    # Record a short clip of each captured target (human evidence only; the
+    # vision judge stays on stills).
+    video: true
     criteria: >-
       The page renders without layout breakage or overlapping elements at each
       breakpoint, and any restyled block matches the intended design (correct
