@@ -64,8 +64,12 @@ gates:
     # declares its capture targets (visual_targets: [{page, mechanism}]);
     # mechanism `pin` serves the branch directly, `overlay` renders a
     # content-bus page with this branch's code via preview.yaml's
-    # overlay_pattern. A ticket with no declared visual surface skips this
-    # gate honestly instead of being judged on an unrelated page.
+    # overlay_pattern.
+    # No silent skips: a change with no covering surface (no ticket targets,
+    # no catalog fit) escalates to a human instead of skipping - the reviewer
+    # decides to grow preview.yaml's surface catalog or accept without
+    # evidence. The gate still never invents a URL to screenshot.
+    on_missing_target: escalate
     breakpoints: [900, 1200]
     # Record a short clip of each captured target (human evidence only; the
     # vision judge stays on stills).
