@@ -9,15 +9,48 @@
       (libs/utils/sidekick.js: loadBlock(div.preflight) + getModal), from THIS
       checkout's code — so the fiesta visual gate (and a human) can see the
       modal produced by the change under review, with no remote content needed.
+
+      The page bootstraps like a REAL milo page (global styles.css + setConfig
+      + loadArea with the production typekit id), so the modal renders in the
+      true style context: Adobe Clean fonts, global custom properties, real
+      overlay behavior. A bare skeleton here made every capture an unstyled
+      wireframe that no judge or human could assess (RCA run b80266ad).
+
+      Deliberately NOT preloaded: the c2 token sheets (libs/c2/styles). Most
+      real pages don't carry them, so preflight must bring its own tokens or
+      literal fallbacks — this surface has to be able to CATCH that defect,
+      not mask it.
     -->
+    <link rel="stylesheet" href="/libs/styles/styles.css"/>
     <script type="module">
-      import { setConfig, loadBlock, createTag } from '/libs/utils/utils.js';
-      setConfig({ codeRoot: '/libs' });
-      const { getModal } = await import('/libs/blocks/modal/modal.js');
+      import { setConfig, loadArea, loadBlock, createTag } from '/libs/utils/utils.js';
+
+      const config = {
+        codeRoot: '/libs',
+        contentRoot: '/',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+      };
+      setConfig(config);
+      await loadArea();
+
       const preflight = createTag('div', { class: 'preflight' });
       const content = await loadBlock(preflight);
+      const { getModal } = await import('/libs/blocks/modal/modal.js');
       getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
     </script>
   </head>
-  <body></body>
+  <body>
+    <header></header>
+    <main>
+      <div class="section">
+        <h1>Preflight demo page</h1>
+        <p>
+          Representative page content behind the modal, so a capture shows the
+          real overlay context (dimmed page, dialog elevation) instead of a
+          void.
+        </p>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
 </html>

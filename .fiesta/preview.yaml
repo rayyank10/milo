@@ -39,7 +39,14 @@ surfaces:
     page: /tools/preflight-demo.html
     mechanism: pin
     description: >-
-      The Preflight modal demo tool. Exercises libs/blocks/preflight — the
-      modal chrome, tab panels, check items, and their spacing, typography,
-      and design-token styling. Its checks show "Checking..." while running.
+      The Preflight modal demo tool on a standard-bootstrap milo page.
+      Exercises libs/blocks/preflight — the modal chrome, tab panels, check
+      items, and their spacing, typography, and design-token styling. Its
+      checks show "Checking..." while running.
     match: 'libs/blocks/preflight/**'
+    # The capture is evidence only if the surface loaded its style context —
+    # a styleless wireframe must never reach the judge (fiesta verifies each
+    # entry loaded with a non-error status).
+    requires:
+      - /libs/styles/styles.css
+      - /libs/blocks/preflight/preflight.css
