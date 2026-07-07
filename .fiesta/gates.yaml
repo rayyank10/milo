@@ -55,7 +55,12 @@ gates:
       (fiesta config/floors/acom, snapshot in .fiesta/floor/). Skips honestly
       when no adversary model is reachable in dev.
     blocking: true
-    failure_route: escalate_to_human
+    # `regenerate`: a genuine adversary failure re-enters codegen for a bounded
+    # producer rebuild (HARNESS_PRODUCTION_ROUNDS) with the concerns as feedback,
+    # then escalates to a human at round exhaustion. Permitted by the acom floor,
+    # which declares the same route (INV-3). The producer never self-approves —
+    # the adversary re-adjudicates every round (INV-4).
+    failure_route: regenerate
 
   visual:
     template: visual

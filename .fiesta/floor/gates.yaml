@@ -17,4 +17,7 @@ gates:
       Binds every acom product; tenants may tighten but not drop it. Skips
       honestly when no adversary model is reachable in dev.
     blocking: true
-    failure_route: escalate_to_human
+    # Mirrors the packaged acom floor (fiesta config/floors/acom), temporarily
+    # loosened from escalate_to_human to `regenerate` on 2026-07-06 (operator-
+    # authorized, INV-6). Re-tighten here in lockstep with the packaged floor.
+    failure_route: regenerate
