@@ -167,3 +167,19 @@ surfaces:
     description: >-
       Hero marquee block variants on the milo kitchen-sink page
     match: 'libs/blocks/hero-marquee/**'
+
+  # ── Scenario surfaces: a page PLUS the query params that put it in a specific
+  # state worth verifying. Query params declared here survive the milolibs
+  # overlay merge, so the before/after pair renders the scenario itself.
+  - id: utils-locale-geo
+    url: https://main--da-bacom--adobecom.aem.live/?country=fr&martech=off
+    description: >-
+      Locale/geo-simulation scenario: a bacom consumer homepage rendered as a
+      simulated French visitor via ?country=fr. Pick for changes to country or
+      locale DETECTION in the core runtime — getCountry, the ?country= /
+      ?akamaiLocale= geo-simulation query params, lingo cross-site content, or
+      market/locale resolution — the page's localized content resolves against
+      the simulated country, so a before/after pair shows whether the parameter
+      is honoured. Not for the georouting banner block (it has its own surface)
+      or utils changes unrelated to locale (rendering, LCP, decoration).
+    match: 'libs/utils/**'
