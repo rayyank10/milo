@@ -71,3 +71,113 @@ surfaces:
     match: 'libs/utils/**'
     requires:
       - /libs/styles/styles.css
+
+  # ── Mined from adobecom/milo merged-PR test URLs (600 PRs, 2025-10→2026-07;
+  # every url probed HTTP 200 at mining time; see docs in the fiesta workspace).
+  # url-surfaces render via the request-URL machinery: the page as declared,
+  # with the harness branch merged into its milolibs query.
+  - id: utils
+    url: https://main--milo--adobecom.aem.page/?martech=off
+    description: >-
+      Milo core runtime (utils.js decoration, placeholders, locale/LCP path) on the milo preview homepage with martech off
+    match: 'libs/utils/**'
+  - id: blocks-merch
+    url: https://main--milo--adobecom.aem.page/drafts/rivero/merch/special-offers?martech=off
+    description: >-
+      Merch price/CTA inline blocks and merch modals on a merch special-offers draft page
+    match: 'libs/blocks/merch/**'
+  - id: c2
+    url: https://main--upp--adobecom.aem.live/homepage/drafts/ramuntea/redesign-demo
+    description: >-
+      Spectrum-2 (s2a token) site-redesign blocks and styles on the UPP homepage redesign demo
+    match: 'libs/c2/**'
+  - id: mep
+    url: https://www.stage.adobe.com/dc-shared/fragments/tests/2026/q2/ace1205/fragments/ace1205-bizpro-hub?mep=%2Fdc-shared%2Ffragments%2Ftests%2F2026%2Fq2%2Face1205%2Fdc1205-base-page-dc.json--all&martech=off
+    description: >-
+      MEP campaign fragment bundles (libs/mep/<campaign>) rendered via a dc-shared campaign fragment on stage
+    match: 'libs/mep/**'
+  - id: blocks-global-navigation
+    url: https://main--dc--adobecom.aem.live/acrobat?martech=off
+    description: >-
+      Global navigation (gnav) header on the Acrobat consumer page with martech off
+    match: 'libs/blocks/global-navigation/**'
+  - id: features-personalization
+    url: https://main--milo--adobecom.aem.page/?martech=off
+    description: >-
+      MEP personalization engine (manifest resolution, highlighting) on the milo preview homepage
+    match: 'libs/features/personalization/**'
+  - id: deps
+    url: https://www.stage.adobe.com/acrobat/online/sign-pdf.html?martech=off
+    description: >-
+      Vendored dependencies (imslib, mas web components) exercised by the Acrobat online sign-pdf funnel page
+    match: 'libs/deps/**'
+  - id: blocks-caas
+    url: https://main--milo--adobecom.aem.page/tools/caas
+    description: >-
+      CaaS card collections live-rendered inside the CaaS configurator preview
+    match: 'libs/blocks/caas/**'
+  - id: features-mas
+    url: https://main--cc--adobecom.aem.live/drafts/rivero/products/catalog
+    description: >-
+      M@S catalog (merch-at-scale cards, filters, PZN modal) on the CC products catalog draft
+    match: 'libs/features/mas/**'
+  - id: blocks-brand-concierge
+    url: https://main--milo--adobecom.aem.page/drafts/colloyd/brand-concierge/bc-floating-button
+    description: >-
+      Brand Concierge chat block incl. floating button entry point on its dedicated draft page
+    match: 'libs/blocks/brand-concierge/**'
+  - id: tools
+    url: https://milo.adobe.com/tools/send-to-caas/bulkpublisher.html
+    description: >-
+      Repo tools pages, e.g. the send-to-CaaS bulk publisher UI on milo.adobe.com
+    match: 'tools/**'
+  - id: blocks-merch-card-collection-autoblock
+    url: https://main--cc--adobecom.aem.live/creativecloud/plans
+    description: >-
+      Merch card collection autoblock on the CC Creative Cloud plans page
+    match: 'libs/blocks/merch-card-collection-autoblock/**'
+  - id: features-georoutingv2
+    url: https://main--dc--adobecom.aem.live/acrobat?martech=off
+    description: >-
+      Geo-routing v2 banner/redirect logic on the Acrobat consumer page
+    match: 'libs/features/georoutingv2/**'
+  - id: blocks-carousel
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/carousel
+    description: >-
+      Carousel block variants on the milo kitchen-sink carousel page
+    match: 'libs/blocks/carousel/**'
+  - id: blocks-section-metadata
+    url: https://main--milo--adobecom.aem.page/drafts/klee/jira-ticket/mwpw-189253-ups-gap-removed-10-col?martech=off
+    description: >-
+      Section-metadata driven layout (grids, gaps, backgrounds) on a section-metadata regression draft
+    match: 'libs/blocks/section-metadata/**'
+  - id: navigation
+    url: https://main--milo--adobecom.aem.page/drafts/blaishram/test-urls/page?martech=off
+    description: >-
+      Standalone gnav bootstrapper (libs/navigation) on the dedicated standalone test page
+    match: 'libs/navigation/**'
+  - id: blocks-ost
+    url: https://main--milo--adobecom.aem.live/tools/ost
+    description: >-
+      Offer Selector Tool (OST) authoring UI page
+    match: 'libs/blocks/ost/**'
+  - id: blocks-caas-config
+    url: https://main--milo--adobecom.aem.page/tools/caas
+    description: >-
+      CaaS configurator tool page (config UI plus live collection preview)
+    match: 'libs/blocks/caas-config/**'
+  - id: blocks-region-nav
+    url: https://main--homepage--adobecom.aem.live/homepage/index-loggedout
+    description: >-
+      Region picker / region-nav modal via the homepage logged-out page footer
+    match: 'libs/blocks/region-nav/**'
+  - id: blocks-email-collection
+    url: https://main--milo--adobecom.aem.page/drafts/ratko/email-collection/email-collection-kt
+    description: >-
+      Email collection form block on its kitchen-test draft page
+    match: 'libs/blocks/email-collection/**'
+  - id: blocks-hero-marquee
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/hero-marquee?martech=off
+    description: >-
+      Hero marquee block variants on the milo kitchen-sink page
+    match: 'libs/blocks/hero-marquee/**'
