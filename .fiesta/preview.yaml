@@ -28,6 +28,13 @@ capture_hosts:
   - '--milo--adobecom.aem.page'    # milo's own upstream previews
   - host: '--da-dc--adobecom.aem.page'   # DC consumer pages (MWPW-198935 class)
     capture_on: '--da-dc--adobecom.aem.live'
+  # bacom consumer pages (MWPW-193755 class — upstream PR #6237 verified the
+  # country-param change on main--da-bacom--adobecom.aem.live/?country=fr with
+  # ?milolibs=<branch>; pasted query params like country= are preserved).
+  # Preview host may be IMS/VPN-gated; capture on the public publish host.
+  - host: '--da-bacom--adobecom.aem.page'
+    capture_on: '--da-bacom--adobecom.aem.live'
+  - '--da-bacom--adobecom.aem.live'
 
 # Known-good capture surfaces. When a ticket declares no visual_targets, the
 # harness reads ONLY these ids + descriptions (progressive disclosure) and asks
@@ -50,3 +57,17 @@ surfaces:
     requires:
       - /libs/styles/styles.css
       - /libs/blocks/preflight/preflight.css
+
+  - id: core-bootstrap-smoke
+    page: /tools/preflight-demo.html
+    mechanism: pin
+    description: >-
+      Render-smoke surface for core library changes (libs/utils/**): any
+      standard-bootstrap milo page proves the library still boots, decorates
+      blocks, and renders styled content — core breakage blanks every page,
+      which a capture catches immediately. Feature-level locale/geo evidence
+      (e.g. ?country=) comes from a ticket-pasted consumer URL instead
+      (see capture_hosts).
+    match: 'libs/utils/**'
+    requires:
+      - /libs/styles/styles.css
