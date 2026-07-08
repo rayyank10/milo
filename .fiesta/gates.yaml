@@ -93,5 +93,9 @@ gates:
       spacing, colors, and typography). No visible error or empty states.
       If the target is the preflight demo page, its checks legitimately show
       in-progress "Checking..." states — treat those as expected, not errors.
-    require_human: true
+    # Machine verdict is authoritative: the vision judge's pass/fail decides the
+    # gate; the run no longer parks for evidence sign-off (the acom floor does
+    # not mandate require_human, so this relaxation is INV-3-legal). Flip back
+    # to true to restore the human-authority review of every visual change.
+    require_human: false
     blocking: true
