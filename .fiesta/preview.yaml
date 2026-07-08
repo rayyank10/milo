@@ -65,7 +65,9 @@ surfaces:
   - id: utils
     url: https://main--milo--adobecom.aem.page/?martech=off
     description: >-
-      Milo core runtime (utils.js decoration, placeholders, locale/LCP path) on the milo preview homepage with martech off
+      Milo core runtime (utils.js decoration, placeholders, LCP path) on the
+      milo preview homepage with martech off. Generic render-smoke — pick ONLY
+      when no more specific scenario or feature surface covers the change.
     match: 'libs/utils/**'
   - id: blocks-merch
     url: https://main--milo--adobecom.aem.page/drafts/rivero/merch/special-offers?martech=off
