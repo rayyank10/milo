@@ -9,6 +9,14 @@
 # Note: Milo's block-structure check used to be hardcoded inside the harness.
 # It is re-declared here as a `command` gate so the harness can stay generic —
 # nothing Milo-specific needs to live in the harness anymore.
+
+# Toolchain provisioning — run once in the worktree before any gate. Milo's
+# command gates (`npx eslint`, `npx web-test-runner`) need node_modules present,
+# otherwise npx fetches the latest ESLint (v10), which rejects Milo's legacy
+# .eslintrc and exits 2 — a false failure. Installing the pinned devDependencies
+# (eslint 8.11.0 + airbnb-base + plugins) makes the gates lint the real code.
+provision: npm ci
+
 gates:
   lint:
     template: command
