@@ -58,20 +58,6 @@ surfaces:
       - /libs/styles/styles.css
       - /libs/blocks/preflight/preflight.css
 
-  - id: core-bootstrap-smoke
-    page: /tools/preflight-demo.html
-    mechanism: pin
-    description: >-
-      Render-smoke surface for core library changes (libs/utils/**): any
-      standard-bootstrap milo page proves the library still boots, decorates
-      blocks, and renders styled content — core breakage blanks every page,
-      which a capture catches immediately. Feature-level locale/geo evidence
-      (e.g. ?country=) comes from a ticket-pasted consumer URL instead
-      (see capture_hosts).
-    match: 'libs/utils/**'
-    requires:
-      - /libs/styles/styles.css
-
   # ── Mined from adobecom/milo merged-PR test URLs (600 PRs, 2025-10→2026-07;
   # every url probed HTTP 200 at mining time; see docs in the fiesta workspace).
   # url-surfaces render via the request-URL machinery: the page as declared,
