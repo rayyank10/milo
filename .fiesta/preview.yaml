@@ -26,6 +26,20 @@ overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}
 local:
   cmd: 'aem up --port=6456 --no-open --stop-other'
   url: 'http://localhost:6456{page}'
+  # Foreign consumer pages (da-dc/bacom/cc/upp — anything that CONSUMES Milo via
+  # ?milolibs=): keep the page REMOTE on its public content host and source THIS
+  # branch's libs from the local dev server via milolibs=local (the consumer's
+  # own setLibs maps `local` → localhost:6456). No fork code-bus, no site auth
+  # (public .aem.live content), no CDN races. host_swap rewrites the pasted
+  # preview host (.aem.page, gated) to the public content host (.aem.live).
+  # own_hosts identifies Milo's OWN hosts (any '--milo--' host): those are served
+  # by the local server directly instead — milolibs=local is a no-op on Milo's
+  # own host, so serving locally is what shows the diff. This path needs the
+  # engine to relax browser web security (remote HTTPS importing http://localhost).
+  consumer_overlay:
+    own_hosts: ['--milo--']
+    params: 'milolibs=local&martech=off'
+    host_swap: { '.aem.page': '.aem.live' }
 
 # Hosts that carry Milo's pages when a requester pastes a URL in the ticket.
 # Milo ships as a library: real repro URLs usually live on CONSUMER sites that
