@@ -52,16 +52,36 @@ capture_hosts:
 # login_url: https://admin.hlx.page/login/{org}/{site}/{ref} on the profile.
 auth_profiles:
   ims:
+    # The test account this profile signs in with. `username` is declared in
+    # the clear — it is the identity a site admin must add to the da-dc /
+    # da-bacom PREVIEW access allowlist (as of 2026-07-10 it is NOT yet on it:
+    # admin.hlx.page/status returns 403 / permissions:null for these sites).
+    # The password is read from the IMS_PASS engine env var; never in this repo.
+    # Need a different/second account? Declare another profile (one each).
+    account:
+      username: cod23684+masautomation@adobetest.com
+      password_env: IMS_PASS
+      note: >-
+        Allowlist this account for PREVIEW on adobecom sites da-dc and da-bacom
+        (tools.aem.live / helix config service). Verify:
+        admin.hlx.page/status/adobecom/da-dc/main/ returns preview.status 200
+        (not 403) when signed in as this user.
     idp_hosts: [auth.services.adobe.com, ims-na1.adobelogin.com]
     steps:
       - fill: '#EmailPage-EmailField'
-        value_env: IMS_EMAIL
+        value_from: username
         timeout_ms: 45000
       - click: '[data-id=EmailPage-ContinueButton]'
       - fill: '#PasswordPage-PasswordField'
-        value_env: IMS_PASS
+        value_from: password
         timeout_ms: 60000
       - click: '[data-id=PasswordPage-ContinueButton]'
+      # Multi-profile accounts land on an IMS profile chooser after password
+      # (measured 2026-07-10) — pick the personal/authoring profile. Optional:
+      # single-profile accounts skip straight past it.
+      - click: '[data-id="PP-ProfileChooser-AuthAccount"]'
+        optional: true
+        timeout_ms: 8000
       - click: 'button:has-text("Skip"), [data-id="PasskeyNudgePage-SkipButton"]'
         optional: true
         timeout_ms: 8000
