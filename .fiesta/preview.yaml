@@ -21,20 +21,51 @@ overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}
 # own host). Entries starting with '--' are host suffixes: any branch label of
 # that site (main--, stage--, …). URLs on hosts not listed here (and not on the
 # pin/overlay hosts above) are treated as reference links and ignored.
-# da-dc's preview host is IMS-gated (401 for a headless capture); its publish
-# host serves the same page publicly and still honors milolibs, so capture_on
-# swaps it in at capture time.
+#
+# POLICY (operator, 2026-07-10): verification evidence comes from .aem.page,
+# never .aem.live. The .live edge caches code per encoding variant for 2h
+# (vs 60s on .page), so a .live capture can photograph up-to-2h-stale code —
+# two MWPW-198935 runs blanked on exactly that (poisoned br variants). Pasted
+# .live URLs are swapped BACK to the preview host at capture time. da-dc /
+# da-bacom .page previews are IMS-gated: until the harness automation account
+# is allowlisted for those sites (see auth_profiles below), captures there
+# fail honestly (HTTP 401 → escalate) instead of photographing .live.
 capture_hosts:
   - '--milo--adobecom.aem.page'    # milo's own upstream previews
-  - host: '--da-dc--adobecom.aem.page'   # DC consumer pages (MWPW-198935 class)
-    capture_on: '--da-dc--adobecom.aem.live'
-  # bacom consumer pages (MWPW-193755 class — upstream PR #6237 verified the
-  # country-param change on main--da-bacom--adobecom.aem.live/?country=fr with
-  # ?milolibs=<branch>; pasted query params like country= are preserved).
-  # Preview host may be IMS/VPN-gated; capture on the public publish host.
-  - host: '--da-bacom--adobecom.aem.page'
-    capture_on: '--da-bacom--adobecom.aem.live'
-  - '--da-bacom--adobecom.aem.live'
+  - '--da-dc--adobecom.aem.page'   # DC consumer pages (MWPW-198935 class)
+  # bacom consumer pages (MWPW-193755 class — pasted query params like
+  # country= survive the milolibs merge).
+  - '--da-bacom--adobecom.aem.page'
+  - host: '--da-dc--adobecom.aem.live'     # pasted publish-host URLs
+    capture_on: '--da-dc--adobecom.aem.page'
+  - host: '--da-bacom--adobecom.aem.live'
+    capture_on: '--da-bacom--adobecom.aem.page'
+
+# Login flows for auth-gated capture hosts, executed generically by the
+# harness. Credentials are referenced by env var NAME — values live only in
+# the engine environment, never in this repo. The `ims` flow is verified
+# end-to-end against auth.services.adobe.com with the harness automation
+# account. It is DORMANT until a capture_hosts entry attaches it via
+# `auth: ims` — do that only after the automation account (IMS_EMAIL) is
+# allowlisted for the site's preview access. helix site-auth hosts
+# (da-dc/da-bacom .aem.page) additionally need
+# login_url: https://admin.hlx.page/login/{org}/{site}/{ref} on the profile.
+auth_profiles:
+  ims:
+    idp_hosts: [auth.services.adobe.com, ims-na1.adobelogin.com]
+    steps:
+      - fill: '#EmailPage-EmailField'
+        value_env: IMS_EMAIL
+        timeout_ms: 45000
+      - click: '[data-id=EmailPage-ContinueButton]'
+      - fill: '#PasswordPage-PasswordField'
+        value_env: IMS_PASS
+        timeout_ms: 60000
+      - click: '[data-id=PasswordPage-ContinueButton]'
+      - click: 'button:has-text("Skip"), [data-id="PasskeyNudgePage-SkipButton"]'
+        optional: true
+        timeout_ms: 8000
+    settle_ms: 5000
 
 # Known-good capture surfaces. When a ticket declares no visual_targets, the
 # harness reads ONLY these ids + descriptions (progressive disclosure) and asks
