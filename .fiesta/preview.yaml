@@ -14,6 +14,19 @@ pin_pattern: 'https://{branch}--milo--antonio-rmrz.aem.page{page}?martech=off'
 # read-only against the consumer host.
 overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}--milo--antonio-rmrz&martech=off'
 
+# Local-serve preview (preferred): run Milo's own AEM CLI dev server on the
+# materialized worktree and capture localhost, instead of a remote branch
+# preview. Serves the diff-applied CODE locally + proxies content from the
+# content bus — so the visual gate verifies the actual change with no code-sync
+# wait and no fork code-bus CORS/CDN races. `cmd` runs in the worktree;
+# `--stop-other` reclaims the port across runs. NOTE: serves Milo's OWN pages
+# (main--milo--adobecom paths render here); a foreign consumer page pasted in a
+# ticket (da-dc/cc/bacom) has no path on this server and escalates honestly —
+# multi-repo local compose for those is a separate capability.
+local:
+  cmd: 'aem up --port=6456 --no-open --stop-other'
+  url: 'http://localhost:6456{page}'
+
 # Hosts that carry Milo's pages when a requester pastes a URL in the ticket.
 # Milo ships as a library: real repro URLs usually live on CONSUMER sites that
 # load milo via ?milolibs= — the harness renders such a URL as itself with the
