@@ -142,6 +142,17 @@ surfaces:
       - dispatch_event: 'custom:preflight'
         at: aem-sidekick
       - wait_for: '#preflight'
+    # Each tab is a distinct UI state judged as its own still; text= selectors survive
+    # redesigns (tab labels are product terms, class names are not). Panels load async — give them a beat.
+    states:
+      - name: Assets tab open
+        steps:
+          - click: '#preflight >> text=Assets'
+          - wait_ms: 2500
+      - name: Martech tab open
+        steps:
+          - click: '#preflight >> text=Martech'
+          - wait_ms: 2500
     # Evidence only with its style context (checked at capture time; preflight.css loads with the modal).
     requires:
       - /libs/styles/styles.css
