@@ -23,8 +23,17 @@ overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}
 # (main--milo--adobecom paths render here); a foreign consumer page pasted in a
 # ticket (da-dc/cc/bacom) has no path on this server and escalates honestly —
 # multi-repo local compose for those is a separate capability.
+# --url pins the CONTENT origin to the fork's real base ref. Without it the
+# AEM CLI derives the proxy ref from the local git branch; the harness
+# worktree sits on a local work branch with no remote counterpart, so the CLI
+# falls back to ref `main` — which does NOT exist on this fork (default is
+# `stage`). main--…aem.page then serves default-branch CONTENT but injects an
+# EMPTY head.html (no /libs scripts, no styles): the page renders as a dead,
+# styleless wireframe where milo's runtime never boots, and every
+# interaction-driven surface fails (RCA run d5226c7a, 2026-07-11). Code still
+# serves from the worktree — only content/head come from the pinned origin.
 local:
-  cmd: 'aem up --port=6456 --no-open --stop-other'
+  cmd: 'aem up --port=6456 --no-open --stop-other --url https://stage--milo--antonio-rmrz.aem.page'
   url: 'http://localhost:6456{page}'
   # Foreign consumer pages (da-dc/bacom/cc/upp — anything that CONSUMES Milo via
   # ?milolibs=): keep the page REMOTE on its public content host and source THIS
