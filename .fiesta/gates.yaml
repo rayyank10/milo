@@ -98,4 +98,11 @@ gates:
     # not mandate require_human, so this relaxation is INV-3-legal). Flip back
     # to true to restore the human-authority review of every visual change.
     require_human: false
+    # No human approval on failure: every visual failure — a rejected vision
+    # verdict AND a capture interaction that never reached its declared state
+    # — feeds the bounded production re-entry loop (HARNESS_PRODUCTION_ROUNDS)
+    # instead of pausing at verification_escalation. The run only stops for a
+    # human once the rounds budget is exhausted. Remove this line to restore
+    # the stop-on-first-failure posture.
+    failure_route: regenerate
     blocking: true
