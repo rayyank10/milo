@@ -23,15 +23,8 @@ overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}
 # (main--milo--adobecom paths render here); a foreign consumer page pasted in a
 # ticket (da-dc/cc/bacom) has no path on this server and escalates honestly —
 # multi-repo local compose for those is a separate capability.
-# --url pins the CONTENT origin to the fork's real base ref. Without it the
-# AEM CLI derives the proxy ref from the local git branch; the harness
-# worktree sits on a local work branch with no remote counterpart, so the CLI
-# falls back to ref `main` — which does NOT exist on this fork (default is
-# `stage`). main--…aem.page then serves default-branch CONTENT but injects an
-# EMPTY head.html (no /libs scripts, no styles): the page renders as a dead,
-# styleless wireframe where milo's runtime never boots, and every
-# interaction-driven surface fails (RCA run d5226c7a, 2026-07-11). Code still
-# serves from the worktree — only content/head come from the pinned origin.
+# --url pins the CONTENT origin to a real fork ref: the harness worktree's local
+# work branch resolves to ref `main` (absent on this fork) → empty head.html, dead page.
 local:
   cmd: 'aem up --port=6456 --no-open --stop-other --url https://stage--milo--antonio-rmrz.aem.page'
   url: 'http://localhost:6456{page}'
@@ -138,27 +131,18 @@ surfaces:
       nav rail / tab panels, check cards, and their spacing, typography, and
       design-token styling. Its checks may show "Checking..." while running.
     match: 'libs/blocks/preflight/**'
-    # Preflight has no page of its own: it opens when the AEM Sidekick
-    # extension fires `custom:preflight` on the element it injects. These
-    # steps simulate exactly that companion contract — libs/utils/utils.js
-    # initSidekick() picks up `sidekick-ready`, libs/utils/sidekick.js
-    # handles `custom:preflight` — so milo's REAL wiring renders the modal
-    # over a real page (replaces the committed tools/preflight-demo.html).
-    # The homepage carries no c2 token sheets, so preflight must bring its
-    # own tokens or literal fallbacks — this surface still catches that.
+    # Preflight opens only via the Sidekick extension's element + events; these steps
+    # simulate that companion contract so milo's own wiring renders the modal (no demo page).
+    # The homepage carries no c2 token sheets — the surface still catches a tokenless modal.
     interact:
       - append_element: aem-sidekick
       - dispatch_event: sidekick-ready
-      # initSidekick imports sidekick.js asynchronously; the preflight
-      # listener also debounces 500ms — give both a beat before dispatching.
+      # async sidekick.js import + 500ms listener debounce — give both a beat
       - wait_ms: 2000
       - dispatch_event: 'custom:preflight'
         at: aem-sidekick
       - wait_for: '#preflight'
-    # The capture is evidence only if the surface loaded its style context —
-    # a styleless wireframe must never reach the judge (fiesta verifies each
-    # entry loaded with a non-error status by CAPTURE time; preflight.css
-    # only loads once the interact steps open the modal).
+    # Evidence only with its style context (checked at capture time; preflight.css loads with the modal).
     requires:
       - /libs/styles/styles.css
       - /libs/blocks/preflight/preflight.css
