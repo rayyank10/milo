@@ -120,18 +120,36 @@ auth_profiles:
 # this list, and "none fit" skips the gate honestly. Add an entry per block or
 # area you want visually verifiable; `match` is an optional changed-files hint.
 surfaces:
-  - id: preflight-demo
-    page: /tools/preflight-demo.html
+  - id: preflight
+    page: /
     mechanism: pin
     description: >-
-      The Preflight modal demo tool on a standard-bootstrap milo page.
-      Exercises libs/blocks/preflight — the modal chrome, tab panels, check
-      items, and their spacing, typography, and design-token styling. Its
-      checks show "Checking..." while running.
+      The Preflight modal (pre-publish quality checks) opened over the milo
+      homepage preview. Exercises libs/blocks/preflight — the modal chrome,
+      nav rail / tab panels, check cards, and their spacing, typography, and
+      design-token styling. Its checks may show "Checking..." while running.
     match: 'libs/blocks/preflight/**'
+    # Preflight has no page of its own: it opens when the AEM Sidekick
+    # extension fires `custom:preflight` on the element it injects. These
+    # steps simulate exactly that companion contract — libs/utils/utils.js
+    # initSidekick() picks up `sidekick-ready`, libs/utils/sidekick.js
+    # handles `custom:preflight` — so milo's REAL wiring renders the modal
+    # over a real page (replaces the committed tools/preflight-demo.html).
+    # The homepage carries no c2 token sheets, so preflight must bring its
+    # own tokens or literal fallbacks — this surface still catches that.
+    interact:
+      - append_element: aem-sidekick
+      - dispatch_event: sidekick-ready
+      # initSidekick imports sidekick.js asynchronously; the preflight
+      # listener also debounces 500ms — give both a beat before dispatching.
+      - wait_ms: 2000
+      - dispatch_event: 'custom:preflight'
+        at: aem-sidekick
+      - wait_for: '#preflight'
     # The capture is evidence only if the surface loaded its style context —
     # a styleless wireframe must never reach the judge (fiesta verifies each
-    # entry loaded with a non-error status).
+    # entry loaded with a non-error status by CAPTURE time; preflight.css
+    # only loads once the interact steps open the modal).
     requires:
       - /libs/styles/styles.css
       - /libs/blocks/preflight/preflight.css
