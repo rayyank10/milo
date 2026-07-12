@@ -23,12 +23,8 @@ overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}
 # (main--milo--adobecom paths render here); a foreign consumer page pasted in a
 # ticket (da-dc/cc/bacom) has no path on this server and escalates honestly —
 # multi-repo local compose for those is a separate capability.
-# --url declares the CONTENT origin the local server proxies (the tenant's
-# choice of real pages). Upstream milo preview is public and read-only here,
-# and carries real content — gnav, footer, images — so preflight-style
-# surfaces inspect a genuine page instead of the fork's empty placeholder.
-# (The fork's own content bus has only that placeholder; it also lacks a
-# `main` ref, which is why --url must be pinned at all.)
+# --url is the content origin the local server proxies. Upstream milo preview
+# is public and read-only, and its pages carry real content; the fork's has only a placeholder.
 local:
   cmd: 'aem up --port=6456 --no-open --stop-other --url https://main--milo--adobecom.aem.page'
   url: 'http://localhost:6456{page}'
@@ -127,9 +123,7 @@ auth_profiles:
 # area you want visually verifiable; `match` is an optional changed-files hint.
 surfaces:
   - id: preflight
-    # The local content origin serves the real milo documentation homepage
-    # here: genuine gnav, footer, and images, so asset rows and check states
-    # render from real page content. Preflight works on any milo page.
+    # Locally this is the real milo homepage: real gnav, footer, and images.
     page: /
     mechanism: pin
     description: >-
@@ -161,14 +155,8 @@ surfaces:
         steps:
           - click: '#preflight >> text=Martech'
           - wait_ms: 2500
-      # Last on purpose: clicking an asset row navigates and closes the modal,
-      # so nothing can be captured inside it afterwards. Returns to the Assets
-      # tab first because the previous state left Martech active. Anchored to
-      # product terms (a metric label and the popover's own label), never to
-      # class names: every produced redesign invents its own class names.
-      # The row click and popover wait are optional because the product gates
-      # image checks below 1200px viewports; at narrow widths this state
-      # honestly captures the Assets tab with the product's resize notice.
+      # Runs last: the click closes the modal. Selectors are product terms, not class
+      # names; the two optional steps cannot complete below 1200px, where image checks are off.
       - name: Asset row clicked (Back to Preflight popover)
         steps:
           - click: '#preflight >> text=Assets'
