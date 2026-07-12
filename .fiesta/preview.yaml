@@ -126,7 +126,7 @@ surfaces:
     # A code-bus fixture page that bootstraps like a real milo page and carries
     # real images, so the Assets checks list actual rows. The homepage has no
     # assets, which made every asset criterion unsatisfiable there.
-    page: /tools/preflight-fixture.html
+    page: /drafts/fiesta/preflight-fixture.html
     mechanism: pin
     description: >-
       The Preflight modal (pre-publish quality checks) opened over a milo page
@@ -162,12 +162,17 @@ surfaces:
       # tab first because the previous state left Martech active. Anchored to
       # product terms (a metric label and the popover's own label), never to
       # class names: every produced redesign invents its own class names.
+      # The row click and popover wait are optional because the product gates
+      # image checks below 1200px viewports; at narrow widths this state
+      # honestly captures the Assets tab with the product's resize notice.
       - name: Asset row clicked (Back to Preflight popover)
         steps:
           - click: '#preflight >> text=Assets'
           - wait_ms: 1500
           - click: '#preflight >> text=Upload size'
+            optional: true
           - wait_for: 'text=Back to Preflight'
+            optional: true
     # Evidence only with its style context (checked at capture time; preflight.css loads with the modal).
     requires:
       - /libs/styles/styles.css
