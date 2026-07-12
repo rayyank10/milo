@@ -123,17 +123,21 @@ auth_profiles:
 # area you want visually verifiable; `match` is an optional changed-files hint.
 surfaces:
   - id: preflight
-    page: /
+    # A code-bus fixture page that bootstraps like a real milo page and carries
+    # real images, so the Assets checks list actual rows. The homepage has no
+    # assets, which made every asset criterion unsatisfiable there.
+    page: /tools/preflight-fixture.html
     mechanism: pin
     description: >-
-      The Preflight modal (pre-publish quality checks) opened over the milo
-      homepage preview. Exercises libs/blocks/preflight — the modal chrome,
-      nav rail / tab panels, check cards, and their spacing, typography, and
-      design-token styling. Its checks may show "Checking..." while running.
+      The Preflight modal (pre-publish quality checks) opened over a milo page
+      that carries real images. Exercises libs/blocks/preflight — the modal
+      chrome, nav rail / tab panels, check cards, asset rows, and their
+      spacing, typography, and design-token styling. Its checks may show
+      "Checking..." while running.
     match: 'libs/blocks/preflight/**'
     # Preflight opens only via the Sidekick extension's element + events; these steps
     # simulate that companion contract so milo's own wiring renders the modal (no demo page).
-    # The homepage carries no c2 token sheets — the surface still catches a tokenless modal.
+    # The fixture page carries no c2 token sheets — the surface still catches a tokenless modal.
     interact:
       - append_element: aem-sidekick
       - dispatch_event: sidekick-ready
@@ -153,6 +157,15 @@ surfaces:
         steps:
           - click: '#preflight >> text=Martech'
           - wait_ms: 2500
+      # Last on purpose: clicking an asset row navigates and closes the modal,
+      # so nothing can be captured inside it afterwards. Returns to the Assets
+      # tab first because the previous state left Martech active.
+      - name: Asset row clicked (Back to Preflight popover)
+        steps:
+          - click: '#preflight >> text=Assets'
+          - wait_ms: 1500
+          - click: '.preflight-asset-row'
+          - wait_for: '.preflight-back-popover'
     # Evidence only with its style context (checked at capture time; preflight.css loads with the modal).
     requires:
       - /libs/styles/styles.css
