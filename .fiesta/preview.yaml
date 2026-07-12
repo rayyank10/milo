@@ -151,6 +151,9 @@ surfaces:
         steps:
           - click: '#preflight >> text=Assets'
           - wait_ms: 2500
+          # Asset rows appear when the async check finishes; skip the wait when the page has none.
+          - wait_for: '#preflight >> text=Upload size'
+            optional: true
       - name: Martech tab open
         steps:
           - click: '#preflight >> text=Martech'

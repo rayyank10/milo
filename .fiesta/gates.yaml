@@ -83,7 +83,7 @@ gates:
     # decides to grow preview.yaml's surface catalog or accept without
     # evidence. The gate still never invents a URL to screenshot.
     on_missing_target: escalate
-    breakpoints: [900, 1200]
+    breakpoints: [899, 1200]
     # Record a short clip of each captured target (human evidence only; the
     # vision judge stays on stills).
     video: true
