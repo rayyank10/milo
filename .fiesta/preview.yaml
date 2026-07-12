@@ -23,10 +23,14 @@ overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}
 # (main--milo--adobecom paths render here); a foreign consumer page pasted in a
 # ticket (da-dc/cc/bacom) has no path on this server and escalates honestly —
 # multi-repo local compose for those is a separate capability.
-# --url pins the CONTENT origin to a real fork ref: the harness worktree's local
-# work branch resolves to ref `main` (absent on this fork) → empty head.html, dead page.
+# --url declares the CONTENT origin the local server proxies (the tenant's
+# choice of real pages). Upstream milo preview is public and read-only here,
+# and carries real content — gnav, footer, images — so preflight-style
+# surfaces inspect a genuine page instead of the fork's empty placeholder.
+# (The fork's own content bus has only that placeholder; it also lacks a
+# `main` ref, which is why --url must be pinned at all.)
 local:
-  cmd: 'aem up --port=6456 --no-open --stop-other --url https://stage--milo--antonio-rmrz.aem.page'
+  cmd: 'aem up --port=6456 --no-open --stop-other --url https://main--milo--adobecom.aem.page'
   url: 'http://localhost:6456{page}'
   # Foreign consumer pages (da-dc/bacom/cc/upp — anything that CONSUMES Milo via
   # ?milolibs=): keep the page REMOTE on its public content host and source THIS
@@ -123,21 +127,21 @@ auth_profiles:
 # area you want visually verifiable; `match` is an optional changed-files hint.
 surfaces:
   - id: preflight
-    # A code-bus fixture page that bootstraps like a real milo page and carries
-    # real images, so the Assets checks list actual rows. The homepage has no
-    # assets, which made every asset criterion unsatisfiable there.
-    page: /drafts/fiesta/preflight-fixture.html
+    # The local content origin serves the real milo documentation homepage
+    # here: genuine gnav, footer, and images, so asset rows and check states
+    # render from real page content. Preflight works on any milo page.
+    page: /
     mechanism: pin
     description: >-
-      The Preflight modal (pre-publish quality checks) opened over a milo page
-      that carries real images. Exercises libs/blocks/preflight — the modal
-      chrome, nav rail / tab panels, check cards, asset rows, and their
-      spacing, typography, and design-token styling. Its checks may show
-      "Checking..." while running.
+      The Preflight modal (pre-publish quality checks) opened over the milo
+      documentation homepage, a real page with images. Exercises
+      libs/blocks/preflight — the modal chrome, nav rail / tab panels, check
+      cards, asset rows, and their spacing, typography, and design-token
+      styling. Its checks may show "Checking..." while running.
     match: 'libs/blocks/preflight/**'
     # Preflight opens only via the Sidekick extension's element + events; these steps
     # simulate that companion contract so milo's own wiring renders the modal (no demo page).
-    # The fixture page carries no c2 token sheets — the surface still catches a tokenless modal.
+    # The homepage carries no c2 token sheets — the surface still catches a tokenless modal.
     interact:
       - append_element: aem-sidekick
       - dispatch_event: sidekick-ready
