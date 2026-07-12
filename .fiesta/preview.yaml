@@ -159,13 +159,15 @@ surfaces:
           - wait_ms: 2500
       # Last on purpose: clicking an asset row navigates and closes the modal,
       # so nothing can be captured inside it afterwards. Returns to the Assets
-      # tab first because the previous state left Martech active.
+      # tab first because the previous state left Martech active. Anchored to
+      # product terms (a metric label and the popover's own label), never to
+      # class names: every produced redesign invents its own class names.
       - name: Asset row clicked (Back to Preflight popover)
         steps:
           - click: '#preflight >> text=Assets'
           - wait_ms: 1500
-          - click: '.preflight-asset-row'
-          - wait_for: '.preflight-back-popover'
+          - click: '#preflight >> text=Upload size'
+          - wait_for: 'text=Back to Preflight'
     # Evidence only with its style context (checked at capture time; preflight.css loads with the modal).
     requires:
       - /libs/styles/styles.css
