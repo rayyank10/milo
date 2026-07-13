@@ -3,8 +3,9 @@
 # When this file is present the harness runs THESE gates in place of its
 # built-in default set. Each gate binds to a platform-owned template
 # (command | coverage | visual) and supplies the parameters. The harness
-# substitutes {changed_files} / {test_files} into commands and runs them in
-# the worktree.
+# substitutes typed file selectors into commands and runs them in the
+# worktree. `{test_files}` is resolved by Fiesta from the repository and the
+# change; tickets never provide test mappings.
 #
 # Note: Milo's block-structure check used to be hardcoded inside the harness.
 # It is re-declared here as a `command` gate so the harness can stay generic —
@@ -35,6 +36,13 @@ gates:
     blocking: true
     failure_route: repair_loop
 
+  stylelint:
+    template: command
+    name: Stylelint
+    cmd: npx stylelint {css_files}
+    blocking: true
+    failure_route: repair_loop
+
   unit-tests:
     template: command
     name: Web Test Runner unit tests
@@ -53,22 +61,6 @@ gates:
     cmd: node .fiesta/scripts/check-block-structure.mjs {changed_files}
     blocking: true
     failure_route: repair_loop
-
-  adversary:
-    template: adversary
-    name: Adversarial review — independent merge gate (INV-4)
-    description: >-
-      An independent adversary (different model class, no producer context)
-      reviews the diff before merge — required by the acom org floor
-      (fiesta config/floors/acom, snapshot in .fiesta/floor/). Skips honestly
-      when no adversary model is reachable in dev.
-    blocking: true
-    # `regenerate`: a genuine adversary failure re-enters codegen for a bounded
-    # producer rebuild (HARNESS_PRODUCTION_ROUNDS) with the concerns as feedback,
-    # then escalates to a human at round exhaustion. Permitted by the acom floor,
-    # which declares the same route (INV-3). The producer never self-approves —
-    # the adversary re-adjudicates every round (INV-4).
-    failure_route: regenerate
 
   visual:
     template: visual
@@ -93,16 +85,27 @@ gates:
       spacing, colors, and typography). No visible error or empty states.
       If the target is the preflight demo page, its checks legitimately show
       in-progress "Checking..." states — treat those as expected, not errors.
-    # Machine verdict is authoritative: the vision judge's pass/fail decides the
-    # gate; the run no longer parks for evidence sign-off (the acom floor does
-    # not mandate require_human, so this relaxation is INV-3-legal). Flip back
-    # to true to restore the human-authority review of every visual change.
+    # Machine verdict is authoritative. Evidence is still preserved for PR and
+    # dashboard review; the acom floor does not require a human stop on every
+    # visual ticket.
     require_human: false
-    # No human approval on failure: every visual failure — a rejected vision
-    # verdict AND a capture interaction that never reached its declared state
-    # — feeds the bounded production re-entry loop (HARNESS_PRODUCTION_ROUNDS)
-    # instead of pausing at verification_escalation. The run only stops for a
-    # human once the rounds budget is exhausted. Remove this line to restore
-    # the stop-on-first-failure posture.
+    # D6: judged failures and unreachable ticket-declared states both feed the
+    # bounded production re-entry loop. Fiesta owns that routing mechanism;
+    # this contract only selects the reusable tenant posture.
     failure_route: regenerate
     blocking: true
+
+  # Keep the independent merge gate last so it reviews the code together with
+  # the results of every deterministic and visual gate.
+  adversary:
+    template: adversary
+    name: Adversarial review — independent merge gate (INV-4)
+    description: >-
+      An independent adversary (different model class, no producer context)
+      reviews the diff and prior gate results before merge — required by the
+      acom org floor (snapshot in .fiesta/floor/). Skips honestly when no
+      adversary model is reachable in development.
+    blocking: true
+    # A genuine failure re-enters codegen for a bounded producer rebuild. The
+    # adversary re-adjudicates every round; the producer never self-approves.
+    failure_route: regenerate

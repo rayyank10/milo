@@ -9,24 +9,30 @@ knowledge of its own — everything Milo-specific lives here, in Milo's repo.
 | `manifest.yaml` | Milo's identity (`org`/`product`/`repo`), where ownership comes from, and which shared mental models the planner should use. |
 | `gates.yaml` | Milo's verification gates. When present, these **replace** the harness's built-in default gate set. |
 | `preview.yaml` | How to turn a branch + page into a live preview URL, for the visual gate. |
-| `workflows/*.yaml` | Milo workflows, composed from the harness's capability handlers. |
+| `workflows/*.yaml` | Optional additional request classes; ordinary code tickets use Fiesta's default pipeline. |
 | `scripts/` | Helper scripts a gate invokes (e.g. the block-structure check). |
 
 ## Gates
 
-`gates.yaml` declares four gates, each bound to a platform template:
+`gates.yaml` declares seven reusable gates, each bound to a platform template:
 
-- **lint** — `npx eslint {changed_files} --max-warnings 0`
+- **lint** — ESLint over `{js_files}`.
+- **compat-lint** — Milo's browser-compatibility ESLint configuration.
+- **stylelint** — Stylelint over `{css_files}`.
 - **unit-tests** — `npx web-test-runner {test_files} --node-resolve`
 - **block-structure** — `node .fiesta/scripts/check-block-structure.mjs {changed_files}`:
   every changed `libs/blocks/<name>/` must contain both `<name>.js` and `<name>.css`.
   This check used to be hardcoded in the harness; declaring it here lets the
   harness stay generic.
-- **visual** — captures screenshots of the preview at the given breakpoints and
-  routes the evidence to a human for sign-off.
+- **adversary** — independent review that can send a rejected change through a
+  bounded producer rebuild.
+- **visual** — captures screenshot/video evidence and uses the vision verdict;
+  failures enter the bounded producer rebuild declared by the gate.
 
-The harness substitutes `{changed_files}` / `{test_files}` with the run's file
-list and runs each command in the worktree. A present `gates.yaml` replaces the
+The harness substitutes typed selectors with safe file sets and runs each
+command in the worktree. It derives affected `{test_files}` from changed files
+and repository layout, falling back to the complete runnable suite when needed.
+Tickets do not add YAML or test mappings. A present `gates.yaml` replaces the
 default gates, so this set is the complete list Milo runs.
 
 Patch-coverage (Milo's 100% rule) stays enforced by Milo's existing CI (codecov);
@@ -47,8 +53,10 @@ fork to be connected to AEM Code Sync.
 registry at run time (so the same models are reused across products rather than
 copied into each repo).
 
-## Workflows
+## Ticket intake
 
-`workflows/restyle-block.yaml` composes registered capability handlers
-(`codegen.generate` → `mock.approval`). The harness namespaces the id to
-`milo.restyle-block`.
+Milo is onboarded once through this reusable contract. A normal Jira ticket—UI,
+JavaScript, CSS, tests, tooling, or another code defect—goes through Fiesta's
+default planner → codegen → verification → close pipeline without changing
+`.fiesta/`. A workflow file is only appropriate when Milo introduces a distinct
+request class such as a release chore or migration process.
