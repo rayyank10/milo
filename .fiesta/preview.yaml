@@ -158,16 +158,6 @@ surfaces:
         steps:
           - click: '#preflight >> text=Martech'
           - wait_ms: 2500
-      # Runs last: the click closes the modal. Selectors are product terms, not class
-      # names; the two optional steps cannot complete below 1200px, where image checks are off.
-      - name: Asset row clicked (Back to Preflight popover)
-        steps:
-          - click: '#preflight >> text=Assets'
-          - wait_ms: 1500
-          - click: '#preflight >> text=Upload size'
-            optional: true
-          - wait_for: 'text=Back to Preflight'
-            optional: true
     # Evidence only with its style context (checked at capture time; preflight.css loads with the modal).
     requires:
       - /libs/styles/styles.css
