@@ -58,6 +58,9 @@ gates:
   unit-tests:
     template: command
     name: Web Test Runner unit tests
+    # Milo has multiple runnable test systems. This gate owns only the browser
+    # unit-test tree; Fiesta still derives the affected files within it.
+    test_globs: ["test/**/*.test.js"]
     # Use Milo's canonical runner contract (config, Chromium, port 2000, and
     # coverage). Several suites assert URLs against localhost:2000, so invoking
     # web-test-runner directly on an auto-selected port creates false failures.

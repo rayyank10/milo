@@ -23,7 +23,10 @@ that value at 5; Milo may lower it without an engine deployment.
 - **lint** — ESLint over `{js_files}`.
 - **compat-lint** — Milo's browser-compatibility ESLint configuration.
 - **stylelint** — Stylelint over `{css_files}`.
-- **unit-tests** — `npx web-test-runner {test_files} --node-resolve`
+- **unit-tests** — Milo's canonical Web Test Runner command, with
+  `test_globs: ["test/**/*.test.js"]` declaring its runnable domain. Fiesta
+  derives affected entries inside that domain; neighboring Nala/Playwright
+  suites are not compatible inputs to this gate.
 - **block-structure** — `node .fiesta/scripts/check-block-structure.mjs {changed_files}`:
   every changed `libs/blocks/<name>/` must contain both `<name>.js` and `<name>.css`.
   This check used to be hardcoded in the harness; declaring it here lets the
@@ -34,8 +37,9 @@ that value at 5; Milo may lower it without an engine deployment.
   failures enter the bounded producer rebuild declared by the gate.
 
 The harness substitutes typed selectors with safe file sets and runs each
-command in the worktree. It derives affected `{test_files}` from changed files
-and repository layout, falling back to the complete runnable suite when needed.
+command in the worktree. It derives affected `{test_files}` from changed files,
+repository layout, and the gate's durable runner domain, falling back to that
+gate's complete runnable suite when needed.
 Tickets do not add YAML or test mappings. A present `gates.yaml` replaces the
 default gates, so this set is the complete list Milo runs.
 
