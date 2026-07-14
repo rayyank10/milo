@@ -11,6 +11,12 @@
 # It is re-declared here as a `command` gate so the harness can stay generic —
 # nothing Milo-specific needs to live in the harness anymore.
 
+# Shared producer-regeneration budget for every gate below that selects
+# failure_route: regenerate. Counts the initial candidate; the acom floor caps
+# this at 5, and Milo can tighten it downward without a platform deployment.
+regeneration:
+  max_candidates: 5
+
 # Toolchain provisioning — run once in the worktree before any gate. Milo's
 # command gates (`npx eslint`, `npx web-test-runner`) need node_modules present,
 # otherwise npx fetches the latest ESLint (v10), which rejects Milo's legacy

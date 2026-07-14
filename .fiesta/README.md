@@ -16,6 +16,10 @@ knowledge of its own — everything Milo-specific lives here, in Milo's repo.
 
 `gates.yaml` declares seven reusable gates, each bound to a platform template:
 
+The same file declares `regeneration.max_candidates: 5`, the total candidate
+budget shared by gates that route failures to `regenerate`. The acom floor caps
+that value at 5; Milo may lower it without an engine deployment.
+
 - **lint** — ESLint over `{js_files}`.
 - **compat-lint** — Milo's browser-compatibility ESLint configuration.
 - **stylelint** — Stylelint over `{css_files}`.
