@@ -25,6 +25,8 @@ gates:
     cmd: npx eslint {js_files} --max-warnings 0
     blocking: true
     failure_route: repair_loop
+    repair:
+      cmd: npx eslint {js_files} --max-warnings 0 --fix
 
   # Milo's second eslint config flags browser APIs unsafe across its target
   # browser matrix (e.g. Array.at on old Safari) — the standard lint run does
@@ -35,6 +37,8 @@ gates:
     cmd: npx --no-install eslint --no-eslintrc -c .eslintrc-code-compatibility.js {js_files} --quiet
     blocking: true
     failure_route: repair_loop
+    repair:
+      cmd: npx --no-install eslint --no-eslintrc -c .eslintrc-code-compatibility.js {js_files} --quiet --fix
 
   stylelint:
     template: command
@@ -42,6 +46,8 @@ gates:
     cmd: npx stylelint {css_files}
     blocking: true
     failure_route: repair_loop
+    repair:
+      cmd: npx stylelint {css_files} --fix
 
   unit-tests:
     template: command
