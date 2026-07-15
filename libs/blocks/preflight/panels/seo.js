@@ -2,6 +2,7 @@ import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { asoCache, getASOToken } from '../checks/asoApi.js';
 import { SEO_IDS, SEO_TITLES, STATUS, ASO_TIMEOUT_MS, ASO_POLL_INTERVAL_MS } from '../checks/constants.js';
 import { getChecksSuite, getPreflightResults } from '../checks/preflightApi.js';
+import { updateTabBadges } from '../preflight.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
@@ -174,6 +175,11 @@ async function getResults() {
 
   await Promise.all(checkPromises);
 
+  // Update badge counts
+  const errorCount = icons.filter((icon) => icon === 'red').length;
+  const warningCount = icons.filter((icon) => icon === 'orange').length;
+  updateTabBadges('SEO', errorCount, warningCount);
+
   const red = icons.find((icon) => icon === 'red');
   if (!red) return;
 
@@ -287,36 +293,39 @@ export default function SEO() {
       Sign in
     </button>
   </div>` : html`
-    <div class=preflight-columns>
-      <div class=preflight-column>
-        <${SeoItem} id=${SEO_IDS.title} supportsAi icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
-        <${SeoItem} id=${SEO_IDS.h1Count} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
-        <${SeoItem} id=${SEO_IDS.canonical} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
-        <${SeoItem} id=${SEO_IDS.links} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
+    <div>
+      <h2 class="preflight-section-header">SEO</h2>
+      <div class=preflight-columns>
+        <div class=preflight-column>
+          <${SeoItem} id=${SEO_IDS.title} supportsAi icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
+          <${SeoItem} id=${SEO_IDS.h1Count} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
+          <${SeoItem} id=${SEO_IDS.canonical} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
+          <${SeoItem} id=${SEO_IDS.links} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
+        </div>
+        <div class=preflight-column>
+          <${SeoItem} id=${SEO_IDS.bodySize} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
+          <${SeoItem} id=${SEO_IDS.loremIpsum} supportsAi icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
+          <${SeoItem} id=${SEO_IDS.description} supportsAi icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
+        </div>
       </div>
-      <div class=preflight-column>
-        <${SeoItem} id=${SEO_IDS.bodySize} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
-        <${SeoItem} id=${SEO_IDS.loremIpsum} supportsAi icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
-        <${SeoItem} id=${SEO_IDS.description} supportsAi icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
-      </div>
-    </div>
-    <div class='problem-links'>
-    ${linksResult.value.details.badLinks.length > 0 && html`
-      <p class="note">Close preflight to see problem links highlighted on page.</p>
-      <table>
-        <tr>
-          <th></th>
-          <th>Problematic URLs</th>
-          <th>Located in</th>
-          <th>Status</th>
-        </tr>
-        ${linksResult.value.details.badLinks.map((link, idx) => html`
+      <div class='problem-links'>
+      ${linksResult.value.details.badLinks.length > 0 && html`
+        <p class="note">Close preflight to see problem links highlighted on page.</p>
+        <table>
           <tr>
-            <td>${idx + 1}.</td>
-            <td><a href='${link?.liveHref}' target='_blank'>${link?.liveHref}</a></td>
-            <td><span>${link?.parent}</span></td>
-            <td><span>${link?.status}</span></td>
-          </tr>`)}
-      </table>`}
+            <th></th>
+            <th>Problematic URLs</th>
+            <th>Located in</th>
+            <th>Status</th>
+          </tr>
+          ${linksResult.value.details.badLinks.map((link, idx) => html`
+            <tr>
+              <td>${idx + 1}.</td>
+              <td><a href='${link?.liveHref}' target='_blank'>${link?.liveHref}</a></td>
+              <td><span>${link?.parent}</span></td>
+              <td><span>${link?.status}</span></td>
+            </tr>`)}
+        </table>`}
+      </div>
     </div>`;
 }
