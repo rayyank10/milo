@@ -2,6 +2,10 @@ import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
 import { getPreflightResults } from '../checks/preflightApi.js';
 import { isViewportTooSmall } from '../checks/assets.js';
+import { createTag } from '../../../utils/utils.js';
+import { closeModal } from '../../modal/modal.js';
+
+const HIGHLIGHT_CLASS = 'preflight-asset-highlight';
 
 // Define signals for check results and viewport status
 const assetDimensionsResult = signal({
@@ -13,6 +17,44 @@ const assetsWithMatch = signal([]);
 const criticalAssetFailures = signal([]);
 const warningAssetFailures = signal([]);
 const viewportTooSmall = signal(isViewportTooSmall());
+
+export const assetsBadge = signal({ errors: 0, warnings: 0 });
+
+let backToPreflightEl;
+
+function removeBackToPreflightPopover() {
+  backToPreflightEl?.remove();
+  backToPreflightEl = null;
+}
+
+function openPreflightPanel() {
+  const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
+  sidekick?.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
+}
+
+function showBackToPreflightPopover() {
+  removeBackToPreflightPopover();
+  backToPreflightEl = createTag('button', { class: 'preflight-back-popover', type: 'button' }, 'Back to Preflight');
+  backToPreflightEl.addEventListener('click', () => {
+    removeBackToPreflightPopover();
+    openPreflightPanel();
+  });
+  document.body.append(backToPreflightEl);
+}
+
+function navigateToAsset(asset) {
+  const target = asset?.asset;
+  if (!target) return;
+
+  const dialog = document.querySelector('.dialog-modal#preflight');
+  if (dialog) closeModal(dialog, false);
+
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  target.classList.add(HIGHLIGHT_CLASS);
+  setTimeout(() => target.classList.remove(HIGHLIGHT_CLASS), 3000);
+
+  showBackToPreflightPopover();
+}
 
 /**
  * Runs asset checks and updates signals with the results.
@@ -46,6 +88,11 @@ async function getResults() {
     criticalAssetFailures.value = result.details.criticalAssetFailures || [];
     warningAssetFailures.value = result.details.warningAssetFailures || [];
   }
+
+  assetsBadge.value = {
+    errors: criticalAssetFailures.value.length,
+    warnings: warningAssetFailures.value.length,
+  };
 }
 
 /**
@@ -85,8 +132,21 @@ function AssetGroup({ group }) {
     const isAboveFoldWithMismatch = isCriticalGroup;
     const itemClass = isAboveFoldWithMismatch ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
 
+    const canNavigate = !!asset.asset;
+    const onAssetKeyDown = (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      navigateToAsset(asset);
+    };
+
     return html`
-      <div class='${itemClass}' title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'>
+      <div
+        class='${itemClass}'
+        title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'
+        role=${canNavigate ? 'button' : undefined}
+        tabindex=${canNavigate ? 0 : undefined}
+        onClick=${canNavigate ? () => navigateToAsset(asset) : undefined}
+        onKeyDown=${canNavigate ? onAssetKeyDown : undefined}>
         ${asset.type === 'image' && html`<img src='${asset.src}' />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
         ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}

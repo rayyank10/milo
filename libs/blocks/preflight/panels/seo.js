@@ -70,6 +70,15 @@ const signals = [
   linksResult,
 ];
 
+export const seoBadge = signal({ errors: 0, warnings: 0 });
+
+function updateSeoBadge() {
+  seoBadge.value = {
+    errors: signals.filter((s) => s.value.icon === 'red').length,
+    warnings: signals.filter((s) => s.value.icon === 'orange').length,
+  };
+}
+
 function toUIFormat(result, signalResult) {
   let icon;
   if (result.status === STATUS.PASS) {
@@ -173,6 +182,7 @@ async function getResults() {
   });
 
   await Promise.all(checkPromises);
+  updateSeoBadge();
 
   const red = icons.find((icon) => icon === 'red');
   if (!red) return;
@@ -257,6 +267,7 @@ export default function SEO() {
             const targetSignal = signals.find((s) => s.value.id === partial.id);
             if (targetSignal) toUIFormat(partial, targetSignal);
           });
+          updateSeoBadge();
         }
         if (asoCache.identifyFinished) clearInterval(intervalIdIdentify);
       }, 1000);

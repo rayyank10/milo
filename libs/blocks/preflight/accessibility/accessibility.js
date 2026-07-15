@@ -1,7 +1,11 @@
-import { html, useState, useEffect } from '../../../deps/htm-preact.js';
+import { html, signal, useState, useEffect } from '../../../deps/htm-preact.js';
 import { AXE_CORE_CONFIG } from './accessibility-config.js';
 import runAccessibilityTest from './accessibility-runner.js';
 import AuditImageAltText from './audit-image-alt-text.js';
+
+const ERROR_IMPACTS = ['critical', 'serious'];
+
+export const accessibilityBadge = signal({ errors: 0, warnings: 0 });
 
 /**
  * Preflight Accessibility Tab/Panel.
@@ -21,6 +25,10 @@ export default function Accessibility() {
       const results = await runAccessibilityTest();
       setTestResults(results);
       setLoading(false);
+
+      const violations = results?.violations || [];
+      const errors = violations.filter((v) => ERROR_IMPACTS.includes(v.impact)).length;
+      accessibilityBadge.value = { errors, warnings: violations.length - errors };
     };
     runTest();
   }, []);
@@ -34,7 +42,7 @@ export default function Accessibility() {
   const loadingMarkup = () => html`
     <div class="preflight-columns">
       <div class="preflight-column">
-        <p>Running Accessibility Test...</p>
+        <p class="preflight-loading">Running Accessibility Test...</p>
       </div>
     </div>
   `;

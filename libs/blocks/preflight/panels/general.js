@@ -29,31 +29,43 @@ const localizationResult = signal({ icon: 'purple', title: 'Links', description:
 const localizationIssues = signal([]);
 const localizationClosed = signal(false);
 
+export const generalBadge = signal({ errors: 0, warnings: 0 });
+
+const structureSignals = [
+  navResult,
+  footerResult,
+  regionSelectorResult,
+  georoutingResult,
+  breadcrumbsResult,
+];
+
+function updateGeneralBadge() {
+  const errors = structureSignals.filter((s) => s.value.icon === 'red').length
+    + localizationIssues.value.length;
+  const warnings = structureSignals.filter((s) => s.value.icon === 'orange').length;
+  generalBadge.value = { errors, warnings };
+}
+
 async function getStructureResults() {
-  const signals = [
-    navResult,
-    footerResult,
-    regionSelectorResult,
-    georoutingResult,
-    breadcrumbsResult,
-  ];
   const checks = runStructureChecks({ area: document });
 
   await Promise.all(checks.map((result, index) => Promise.resolve(result)
     .then((res) => {
       const icon = STATUS_TO_ICON_MAP[res.status] || 'orange';
-      signals[index].value = {
+      structureSignals[index].value = {
         icon,
         title: res.title,
         description: res.description,
       };
+      updateGeneralBadge();
     })
     .catch((error) => {
-      signals[index].value = {
+      structureSignals[index].value = {
         icon: 'red',
         title: 'Error',
         description: `Error: ${error.message}`,
       };
+      updateGeneralBadge();
     })));
 }
 
@@ -73,6 +85,7 @@ async function getLocalizationResults() {
       description: `Error: ${error.message}`,
     };
   }
+  updateGeneralBadge();
 }
 
 function getAdminUrl(url, type) {
