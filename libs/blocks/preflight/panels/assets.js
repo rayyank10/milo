@@ -61,6 +61,34 @@ function AssetsItem({ title, description }) {
     </div>`;
 }
 
+function closePreflightAndNavigate(assetEl) {
+  const dialog = document.querySelector('.dialog-modal#preflight');
+  if (dialog) {
+    const closeBtn = dialog.querySelector('.dialog-close');
+    if (closeBtn) closeBtn.click();
+    else dialog.close?.();
+  }
+
+  const existing = document.querySelector('.preflight-back-popover');
+  if (existing) existing.remove();
+
+  const popover = document.createElement('div');
+  popover.className = 'preflight-back-popover';
+  popover.innerHTML = '<button class="preflight-back-btn">Back to Preflight</button>';
+  document.body.appendChild(popover);
+
+  popover.querySelector('.preflight-back-btn').addEventListener('click', () => {
+    popover.remove();
+    const sk = document.querySelector('aem-sidekick, helix-sidekick');
+    if (sk) sk.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
+  });
+
+  setTimeout(() => {
+    assetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    assetEl.classList.add('preflight-asset-highlight');
+  }, 100);
+}
+
 /**
  * Component to display a group of assets.
  */
@@ -84,9 +112,13 @@ function AssetGroup({ group }) {
       ${assetArray.value.map((asset) => {
     const isAboveFoldWithMismatch = isCriticalGroup;
     const itemClass = isAboveFoldWithMismatch ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
+    const handleNavigate = asset.asset ? () => closePreflightAndNavigate(asset.asset) : null;
 
     return html`
-      <div class='${itemClass}' title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'>
+      <div class='${itemClass}'
+        title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'
+        onClick=${handleNavigate}
+        style=${handleNavigate ? 'cursor:pointer' : ''}>
         ${asset.type === 'image' && html`<img src='${asset.src}' />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
         ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
@@ -97,7 +129,7 @@ function AssetGroup({ group }) {
           ${asset.hasMismatch && html`<span>Recommended size: ${asset.recommendedDimensions}</span>`}
           <span>Type: ${asset.typeLabel}</span>
           ${asset.notes && html`<span><strong>Notes:</strong> ${asset.notes}</span>`}
-          ${isAboveFoldWithMismatch && html`<span class="above-fold-notice"><strong>⚠️ CRITICAL:</strong></span>`}
+          ${isAboveFoldWithMismatch && html`<span class="above-fold-notice"><strong>CRITICAL:</strong></span>`}
         </div>
       </div>`;
   })}

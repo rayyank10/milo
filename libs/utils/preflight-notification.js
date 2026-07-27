@@ -4,6 +4,23 @@ import { loadStyle, getConfig } from './utils.js';
 let wasDismissed = false;
 let sidekickObserver;
 let linkCheckListener;
+let preflightModalObserver;
+
+function isPreflightModalOpen() {
+  return !!document.querySelector('.dialog-modal#preflight');
+}
+
+function dismissAndSuppressWhileOpen() {
+  document.querySelector('.milo-preflight-overlay')?.remove();
+  if (preflightModalObserver) return;
+  preflightModalObserver = new MutationObserver(() => {
+    if (!isPreflightModalOpen()) {
+      preflightModalObserver.disconnect();
+      preflightModalObserver = null;
+    }
+  });
+  preflightModalObserver.observe(document.body, { childList: true, subtree: false });
+}
 const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
 function openPreflightPanel() {
   if (!sidekick) return;
@@ -19,6 +36,7 @@ function getMasUnpublishedCount(results) {
 }
 
 async function createPreflightNotification(masUnpublishedCount = 0) {
+  if (isPreflightModalOpen()) return;
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
   const { miloLibs, codeRoot } = getConfig();
@@ -103,13 +121,15 @@ function createObserver() {
   });
 }
 
+window.addEventListener('milo:preflight:open', dismissAndSuppressWhileOpen);
+
 export default async function show() {
   const preflightPromise = getPreflightResults({
     url: window.location.href,
     area: document,
   }).catch(() => null);
 
-  if (wasDismissed || document.querySelector('.milo-preflight-overlay')) return;
+  if (wasDismissed || isPreflightModalOpen() || document.querySelector('.milo-preflight-overlay')) return;
 
   const isPublishButtonDisabled = sidekick?.shadowRoot
     ?.querySelector('plugin-action-bar')?.shadowRoot

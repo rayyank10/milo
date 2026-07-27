@@ -55,6 +55,15 @@ async function getStructureResults() {
         description: `Error: ${error.message}`,
       };
     })));
+  dispatchGeneralBadge();
+}
+
+function dispatchGeneralBadge() {
+  const structureSignals = [navResult, footerResult, regionSelectorResult, georoutingResult, breadcrumbsResult, localizationResult];
+  const errors = structureSignals.filter((s) => s.value.icon === 'red').length
+    + localizationIssues.value.length;
+  const warnings = structureSignals.filter((s) => s.value.icon === 'orange').length;
+  window.dispatchEvent(new CustomEvent('preflight:badge', { detail: { tab: 'General', errors, warnings } }));
 }
 
 async function getLocalizationResults() {
@@ -73,6 +82,7 @@ async function getLocalizationResults() {
       description: `Error: ${error.message}`,
     };
   }
+  dispatchGeneralBadge();
 }
 
 function getAdminUrl(url, type) {
