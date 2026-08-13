@@ -141,4 +141,7 @@ export default async function main() {
   });
 
   if (topNav) topNav.appendChild(statusWidget);
+
+  document.addEventListener('preflight:open', () => { statusWidget.style.display = 'none'; });
+  document.addEventListener('preflight:close', () => { statusWidget.style.display = ''; });
 }

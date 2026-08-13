@@ -3,6 +3,8 @@ import { asoCache, getASOToken } from '../checks/asoApi.js';
 import { SEO_IDS, SEO_TITLES, STATUS, ASO_TIMEOUT_MS, ASO_POLL_INTERVAL_MS } from '../checks/constants.js';
 import { getChecksSuite, getPreflightResults } from '../checks/preflightApi.js';
 
+export const seoBadge = signal({ errors: 0, warnings: 0 });
+
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
 const pass = 'green';
@@ -173,6 +175,11 @@ async function getResults() {
   });
 
   await Promise.all(checkPromises);
+
+  seoBadge.value = {
+    errors: icons.filter((i) => i === 'red').length,
+    warnings: icons.filter((i) => i === 'orange').length,
+  };
 
   const red = icons.find((icon) => icon === 'red');
   if (!red) return;
