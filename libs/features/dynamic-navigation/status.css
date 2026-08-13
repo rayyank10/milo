@@ -1,7 +1,7 @@
 .dynamic-nav-status {
-  border: 2px solid white;
+  border: 2px solid var(--s2a-color-gray-25);
   border-radius: 32px;
-  color: #eee;
+  color: var(--s2a-color-gray-100);
   font-size: 16px;
   padding: 2px 24px;
   cursor: pointer;
@@ -23,27 +23,27 @@
 }
 
 .dynamic-nav-status.active {
-  background-color: #280;
+  background-color: var(--s2a-color-green-900);
 }
 
 .dynamic-nav-status.enabled {
-  background-color: #ec4;
+  background-color: var(--s2a-color-yellow-300);
 }
 
 .dynamic-nav-status.inactive {
-  background-color: #e20;  
+  background-color: var(--s2a-color-background-utility-error);
 }
 
 .dynamic-nav-status.reset {
-  background-color: #707070;  
+  background-color: var(--s2a-color-gray-600);
 }
 
 .dns-badge {
-  border: 2px solid white;
+  border: 2px solid var(--s2a-color-gray-25);
   border-radius: 32px;
   background-color: transparent;
   box-sizing: border-box;
-  color: #eee;
+  color: var(--s2a-color-gray-100);
   padding: 8px;
   height: 12px;
   width: 12px;
@@ -96,10 +96,10 @@
   cursor: pointer;
   display: block;
   position: absolute;
-  border: 2px solid white;
+  border: 2px solid var(--s2a-color-gray-25);
   border-radius: 32px;
   background-color: transparent;
-  color: #eee;
+  color: var(--s2a-color-gray-100);
   height: 20px;
   width: 20px;
   top: 6px;
@@ -124,10 +124,10 @@
   position: absolute;
   top: 60px;
   right: -14px;
-  background-color: #444;
+  background-color: var(--s2a-color-gray-700);
   min-width: 300px;
   border-radius: 16px;
-  box-shadow: 0 0 10px #000;
+  box-shadow: 0 0 10px var(--s2a-color-gray-1000);
   font-size: 12px;
   padding: 20px;
   z-index: 1;
@@ -140,7 +140,7 @@
   position: absolute;
   border-left: 15px solid transparent;
   border-right: 15px solid transparent;
-  border-top: 15px solid #444;
+  border-top: 15px solid var(--s2a-color-gray-700);
   top: -15px;
   right: 75px;
   rotate: 180deg;
@@ -159,7 +159,7 @@
 }
 
 .dynamic-nav-status .details .additional-info {
-  border-bottom: 1px solid white;
+  border-bottom: 1px solid var(--s2a-color-gray-25);
 }
 
 .dynamic-nav-status .disable-values {
@@ -179,7 +179,7 @@
 
 .dynamic-nav-status .disable-values th,
 .dynamic-nav-status .disable-values td {
-  border: 1px solid rgb(160 160 160);
+  border: 1px solid var(--s2a-color-gray-400);
   padding: 8px 10px;
 }
 

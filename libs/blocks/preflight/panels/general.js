@@ -26,7 +26,7 @@ const regionSelectorResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.re
 const georoutingResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.georouting, description: 'Checking...' });
 const breadcrumbsResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.breadcrumbs, description: 'Checking...' });
 const localizationResult = signal({ icon: 'purple', title: 'Links', description: 'Checking...' });
-const localizationIssues = signal([]);
+export const localizationIssues = signal([]);
 const localizationClosed = signal(false);
 
 async function getStructureResults() {

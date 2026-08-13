@@ -6,6 +6,7 @@ const { getLcpEntry, runChecks } = preflightApi.performance;
 
 // Define signals for each performance check result
 const lcpElResult = signal({ icon: 'purple', title: 'Valid LCP', description: 'Checking...' });
+const lcpFound = signal(null);
 const singleBlockResult = signal({ icon: 'purple', title: 'Single Block', description: 'Checking...' });
 const imageSizeResult = signal({ icon: 'purple', title: 'Images size', description: 'Checking...' });
 const videoPosterResult = signal({ icon: 'purple', title: 'Videos', description: 'Checking...' });
@@ -51,6 +52,8 @@ async function getResults() {
   });
 
   await Promise.all(checkPromises);
+  const lcp = await getLcpEntry(window.location.pathname, document);
+  lcpFound.value = !!lcp;
 }
 
 /**
@@ -131,11 +134,13 @@ export default function Panel() {
         <${PerformanceItem} ...${iconsResult.value} />
       </div>
       <div>Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
-      <div> 
-        <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
-          Highlight the found LCP section
-        </span> 
-      </div>
+      ${lcpFound.value && html`
+        <div>
+          <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
+            Highlight the found LCP section
+          </span>
+        </div>
+      `}
       <div class="lcp-tooltip-modal"></div>
     </div>
   `;
