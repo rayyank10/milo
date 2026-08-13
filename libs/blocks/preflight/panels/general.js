@@ -3,6 +3,7 @@ import { STATUS_TO_ICON_MAP, STRUCTURE_TITLES } from '../checks/constants.js';
 import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
+import { setTabBadge } from '../badge-state.js';
 
 const DEF_NOT_FOUND = 'Not found';
 const DEF_NEVER = 'Never';
@@ -339,6 +340,14 @@ function LocalizationIssuesList({ issues }) {
 
 export default function General() {
   useEffect(() => { setContent(); getStructureResults(); getLocalizationResults(); }, []);
+
+  const structureResults = [
+    navResult.value, footerResult.value, regionSelectorResult.value,
+    georoutingResult.value, breadcrumbsResult.value,
+  ];
+  const structureErrors = structureResults.filter((r) => r.icon === 'red').length;
+  const structureWarnings = structureResults.filter((r) => r.icon === 'orange').length;
+  setTabBadge('General', structureErrors + localizationIssues.value.length, structureWarnings);
 
   const allChecked = Object.values(content.value)
     .flatMap((item) => item.items).filter((item) => item.checked);
