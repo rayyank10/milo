@@ -1,6 +1,7 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import preflightApi from '../checks/preflightApi.js';
 import { STATUS_TO_ICON_MAP } from '../checks/constants.js';
+import { setTabBadge } from '../badge-state.js';
 
 const { getLcpEntry, runChecks } = preflightApi.performance;
 
@@ -116,6 +117,17 @@ export default function Panel() {
     getResults();
   }, []);
 
+  const perfResults = [
+    lcpElResult.value, singleBlockResult.value, imageSizeResult.value,
+    videoPosterResult.value, fragmentsResult.value, personalizationResult.value,
+    placeholdersResult.value, iconsResult.value,
+  ];
+  const perfErrors = perfResults.filter((r) => r.icon === 'red').length;
+  const perfWarnings = perfResults.filter((r) => r.icon === 'orange').length;
+  setTabBadge('Performance', perfErrors, perfWarnings);
+
+  const hasNoLcp = lcpElResult.value.description === 'No LCP element found.';
+
   return html`
     <div class="preflight-columns">
       <div class="preflight-column">
@@ -131,11 +143,13 @@ export default function Panel() {
         <${PerformanceItem} ...${iconsResult.value} />
       </div>
       <div>Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
-      <div> 
-        <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
-          Highlight the found LCP section
-        </span> 
-      </div>
+      ${!hasNoLcp && html`
+        <div>
+          <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
+            Highlight the found LCP section
+          </span>
+        </div>
+      `}
       <div class="lcp-tooltip-modal"></div>
     </div>
   `;
