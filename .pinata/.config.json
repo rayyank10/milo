@@ -1,7 +1,7 @@
 {
   "name": "milo",
   "app_name": "milo",
-  "github_repo": "antonio-rmrz/milo",
+  "github_repo": "rayyank10/milo",
   "default_branch": "stage",
   "r2_bucket": "agentic-milo",
   "branch_naming": "milo",
@@ -11,7 +11,11 @@
     "kpis": "harness"
   },
   "services": [
-    { "name": "aem", "env_var": "AEM_PORT", "default": 3000 }
+    {
+      "name": "aem",
+      "env_var": "AEM_PORT",
+      "default": 3000
+    }
   ],
   "depends_on": []
 }
