@@ -4,6 +4,8 @@ import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
 
+export const generalBadge = signal({ errors: 0, warnings: 0 });
+
 const DEF_NOT_FOUND = 'Not found';
 const DEF_NEVER = 'Never';
 const NOT_FOUND = {
@@ -29,32 +31,38 @@ const localizationResult = signal({ icon: 'purple', title: 'Links', description:
 const localizationIssues = signal([]);
 const localizationClosed = signal(false);
 
+const structureSignals = [
+  navResult, footerResult, regionSelectorResult, georoutingResult, breadcrumbsResult,
+];
+
+function updateGeneralBadge() {
+  const structErrors = structureSignals.filter((s) => s.value.icon === 'red').length;
+  const structWarnings = structureSignals.filter((s) => s.value.icon === 'orange').length;
+  const locErrors = localizationResult.value.icon === 'red' ? localizationIssues.value.length : 0;
+  const locWarnings = localizationResult.value.icon === 'orange' ? localizationIssues.value.length : 0;
+  generalBadge.value = { errors: structErrors + locErrors, warnings: structWarnings + locWarnings };
+}
+
 async function getStructureResults() {
-  const signals = [
-    navResult,
-    footerResult,
-    regionSelectorResult,
-    georoutingResult,
-    breadcrumbsResult,
-  ];
   const checks = runStructureChecks({ area: document });
 
   await Promise.all(checks.map((result, index) => Promise.resolve(result)
     .then((res) => {
       const icon = STATUS_TO_ICON_MAP[res.status] || 'orange';
-      signals[index].value = {
+      structureSignals[index].value = {
         icon,
         title: res.title,
         description: res.description,
       };
     })
     .catch((error) => {
-      signals[index].value = {
+      structureSignals[index].value = {
         icon: 'red',
         title: 'Error',
         description: `Error: ${error.message}`,
       };
     })));
+  updateGeneralBadge();
 }
 
 async function getLocalizationResults() {
@@ -73,6 +81,7 @@ async function getLocalizationResults() {
       description: `Error: ${error.message}`,
     };
   }
+  updateGeneralBadge();
 }
 
 function getAdminUrl(url, type) {
