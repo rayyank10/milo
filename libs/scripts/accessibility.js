@@ -33,6 +33,10 @@ function getElementFromPoint(x, y) {
   return elFromPoint;
 }
 
+function isC2Page() {
+  return document.head.querySelector('meta[name="foundation"]')?.content === 'c2';
+}
+
 function scrollTabFocusedElIntoView() {
   let isFocused = false;
   let isPadding = false;
@@ -77,6 +81,20 @@ function scrollTabFocusedElIntoView() {
     element.scrollIntoView({ behavior: 'instant', block: 'center' });
   }
 
+  // On c2 pages the rich-content line-height animation is scroll-driven
+  // (animation-timeline: view()), which means it has no animationend event and
+  // its layout settles on the frame after the browser has processed the scroll.
+  // Deferring to requestAnimationFrame gives the browser one frame to commit
+  // the post-scroll layout before the scroll decision reads bounding rects.
+  // Non-c2 pages keep the existing synchronous timing.
+  function scheduleScrollElement(target) {
+    if (isC2Page()) {
+      requestAnimationFrame(() => scrollElement(target));
+    } else {
+      scrollElement(target);
+    }
+  }
+
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Tab'
     || e.target.closest('.notification')?.parentElement?.querySelector('.notification-curtain')) return;
@@ -85,7 +103,7 @@ function scrollTabFocusedElIntoView() {
     setTimeout(() => {
       if (isFocused) return;
       if (e.target.shadowRoot) {
-        scrollElement(e.target);
+        scheduleScrollElement(e.target);
         return;
       }
       setScrollPadding();
@@ -96,7 +114,7 @@ function scrollTabFocusedElIntoView() {
 
   document.addEventListener('focusin', (e) => {
     if (!isTab && !e.target.closest('footer')) return;
-    scrollElement(e.target);
+    scheduleScrollElement(e.target);
   });
 }
 
