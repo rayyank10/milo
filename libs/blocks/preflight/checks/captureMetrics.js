@@ -119,8 +119,8 @@ async function sendMetrics(metricsData) {
   }
 }
 
-export default async function captureMetrics(results) {
-  if (window.hasCapturedPreflightMetrics) return;
+export default async function captureMetrics(results, { force = false } = {}) {
+  if (!force && window.hasCapturedPreflightMetrics) return;
   window.hasCapturedPreflightMetrics = true;
   try {
     const metrics = await capture(results);
