@@ -1,5 +1,6 @@
 import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 import { loadStyle, getConfig } from './utils.js';
+import initSidekickMetrics from '../blocks/preflight/checks/sidekickMetrics.js';
 
 let wasDismissed = false;
 let sidekickObserver;
@@ -118,6 +119,7 @@ export default async function show() {
   if (isPublishButtonDisabled) return;
 
   createObserver();
+  initSidekickMetrics();
   if (sidekick && sidekick.getAttribute('open') !== 'true') return;
 
   const results = await preflightPromise;
