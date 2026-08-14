@@ -13,21 +13,32 @@ const fragmentsResult = signal({ icon: 'purple', title: 'Fragments', description
 const personalizationResult = signal({ icon: 'purple', title: 'Personalization', description: 'Checking...' });
 const placeholdersResult = signal({ icon: 'purple', title: 'Placeholders', description: 'Checking...' });
 const iconsResult = signal({ icon: 'purple', title: 'Icons', description: 'Checking...' });
+const hasLcpElement = signal(true);
+
+export const performanceBadge = signal({ errors: 0, warnings: 0 });
+
+const signals = [
+  lcpElResult,
+  singleBlockResult,
+  imageSizeResult,
+  videoPosterResult,
+  fragmentsResult,
+  personalizationResult,
+  placeholdersResult,
+  iconsResult,
+];
+
+function updatePerformanceBadge() {
+  performanceBadge.value = {
+    errors: signals.filter((s) => s.value.icon === 'red').length,
+    warnings: signals.filter((s) => s.value.icon === 'orange').length,
+  };
+}
 
 /**
  * Runs performance checks and updates signals with the results.
  */
 async function getResults() {
-  const signals = [
-    lcpElResult,
-    singleBlockResult,
-    imageSizeResult,
-    videoPosterResult,
-    fragmentsResult,
-    personalizationResult,
-    placeholdersResult,
-    iconsResult,
-  ];
   const checks = runChecks(window.location.pathname, document);
 
   const checkPromises = checks.map((resultOrPromise, index) => {
@@ -51,6 +62,10 @@ async function getResults() {
   });
 
   await Promise.all(checkPromises);
+  updatePerformanceBadge();
+
+  const lcp = await getLcpEntry(window.location.pathname, document);
+  hasLcpElement.value = !!lcp?.element;
 }
 
 /**
@@ -130,12 +145,14 @@ export default function Panel() {
         <${PerformanceItem} ...${placeholdersResult.value} />
         <${PerformanceItem} ...${iconsResult.value} />
       </div>
-      <div>Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
-      <div> 
-        <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
-          Highlight the found LCP section
-        </span> 
-      </div>
+      <div class="performance-guidelines-wrapper">Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
+      ${hasLcpElement.value && html`
+        <div>
+          <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
+            Highlight the found LCP section
+          </span>
+        </div>
+      `}
       <div class="lcp-tooltip-modal"></div>
     </div>
   `;
