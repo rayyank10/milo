@@ -1818,6 +1818,7 @@ class Gnav {
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
+            linkElem.dataset.fedsOriginalHref = linkElem.href;
             linkElem.removeAttribute('href');
             linkElem.setAttribute('role', 'link');
             linkElem.setAttribute('aria-disabled', 'true');
@@ -1917,9 +1918,30 @@ export const updateGnavActiveLink = () => {
     el.style.width = '';
   });
 
+  // Restore href and remove stale accessibility attributes from previously-active nav links
+  nav.querySelectorAll('a[data-feds-original-href]').forEach((anchor) => {
+    anchor.setAttribute('href', anchor.dataset.fedsOriginalHref);
+    anchor.removeAttribute('data-feds-original-href');
+    anchor.removeAttribute('role');
+    anchor.removeAttribute('aria-disabled');
+    anchor.removeAttribute('aria-current');
+    anchor.removeAttribute('tabindex');
+  });
+
   nav.querySelectorAll(selectors.navItem).forEach((navItem) => {
-    if (getActiveLink(navItem) instanceof HTMLElement) {
+    const activeLink = getActiveLink(navItem);
+    if (activeLink instanceof HTMLElement) {
       navItem.classList.add(selectors.activeNavItem.slice(1));
+      // For direct nav links (link-type items), preserve and remove the href, then apply
+      // the same accessibility semantics used during initial decoration
+      if (activeLink.parentElement === navItem) {
+        activeLink.dataset.fedsOriginalHref = activeLink.href;
+        activeLink.removeAttribute('href');
+        activeLink.setAttribute('role', 'link');
+        activeLink.setAttribute('aria-disabled', 'true');
+        activeLink.setAttribute('aria-current', 'page');
+        activeLink.setAttribute('tabindex', 0);
+      }
     }
   });
 };

@@ -13,7 +13,8 @@ import {
   addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, isTangentToViewport, toFragment, resetActiveLink } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { updateGnavActiveLink } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
@@ -631,6 +632,86 @@ describe('global navigation', () => {
         expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
           .to.be.true;
       });
+    });
+  });
+
+  describe('active-link href preservation', () => {
+    afterEach(() => {
+      resetActiveLink();
+    });
+
+    it('decorateMainNavItem preserves href in data-feds-original-href and applies accessibility semantics', async () => {
+      const currentUrl = `${window.location.origin}${window.location.pathname}`;
+      const activeLinkNav = `<div>
+        <div class="gnav-brand logo">
+          <div><div>
+            <p><a href="http://localhost:2000/test/blocks/global-navigation/mocks/adobe-logo.svg">Logo</a></p>
+            <p><a href="https://www.adobe.com/">Adobe</a></p>
+          </div></div>
+        </div>
+      </div>
+      <div>
+        <h2><a href="${currentUrl}">Current Page</a></h2>
+      </div>
+      <div>
+        <div class="adobe-logo">
+          <div><div><a href="https://www.adobe.com/">Adobe</a></div></div>
+        </div>
+      </div>`;
+      await createFullGlobalNavigation({ globalNavigation: activeLinkNav, hasBreadcrumbs: false });
+
+      const activeNavItem = document.querySelector('.feds-navItem--active');
+      expect(activeNavItem).to.exist;
+      const activeAnchor = activeNavItem?.querySelector('a.feds-navLink');
+      expect(activeAnchor).to.exist;
+      expect(activeAnchor.getAttribute('data-feds-original-href')).to.equal(currentUrl);
+      expect(activeAnchor.getAttribute('href')).to.be.null;
+      expect(activeAnchor.getAttribute('aria-current')).to.equal('page');
+      expect(activeAnchor.getAttribute('aria-disabled')).to.equal('true');
+      expect(activeAnchor.getAttribute('role')).to.equal('link');
+    });
+
+    it('updateGnavActiveLink restores the previously-active link href and disables the newly-active link', () => {
+      const currentUrl = `${window.location.origin}${window.location.pathname}`;
+      const oldHref = 'https://old.example.com/page';
+
+      document.body.replaceChildren(toFragment`
+        <header class="global-navigation">
+          <nav class="feds-nav">
+            <div class="feds-navItem feds-navItem--active" role="listitem">
+              <a class="feds-navLink"
+                 data-feds-original-href="${oldHref}"
+                 role="link"
+                 aria-disabled="true"
+                 aria-current="page"
+                 tabindex="0">Old Active Link</a>
+            </div>
+            <div class="feds-navItem" role="listitem">
+              <a class="feds-navLink" href="${currentUrl}">New Active Link</a>
+            </div>
+          </nav>
+        </header>`);
+
+      updateGnavActiveLink();
+
+      const [oldNavItem, newNavItem] = [...document.querySelectorAll('.feds-navItem')];
+      const oldAnchor = oldNavItem.querySelector('a');
+      const newAnchor = newNavItem.querySelector('a');
+
+      // Old link: active class removed, href restored, accessibility attributes removed
+      expect(oldNavItem.classList.contains('feds-navItem--active')).to.be.false;
+      expect(oldAnchor.getAttribute('href')).to.equal(oldHref);
+      expect(oldAnchor.getAttribute('data-feds-original-href')).to.be.null;
+      expect(oldAnchor.getAttribute('aria-current')).to.be.null;
+      expect(oldAnchor.getAttribute('aria-disabled')).to.be.null;
+
+      // New link: active class added, original href preserved, href removed, a11y semantics applied
+      expect(newNavItem.classList.contains('feds-navItem--active')).to.be.true;
+      expect(newAnchor.getAttribute('href')).to.be.null;
+      expect(newAnchor.getAttribute('data-feds-original-href')).to.equal(currentUrl);
+      expect(newAnchor.getAttribute('aria-current')).to.equal('page');
+      expect(newAnchor.getAttribute('aria-disabled')).to.equal('true');
+      expect(newAnchor.getAttribute('role')).to.equal('link');
     });
   });
 

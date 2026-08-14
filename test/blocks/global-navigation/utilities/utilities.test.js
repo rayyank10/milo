@@ -7,6 +7,7 @@ import {
   hasActiveLink,
   setActiveLink,
   getActiveLink,
+  resetActiveLink,
   closeAllDropdowns,
   trigger,
   getExperienceName,
@@ -322,6 +323,25 @@ describe('global navigation utilities', () => {
       expect(getActiveLink(area) instanceof HTMLElement).to.be.true;
       expect(hasActiveLink()).to.be.true;
     });
+
+    it('resetActiveLink resets only the flag and does not mutate href attributes', () => {
+      const anchor = toFragment`<a href="https://example.com/">Link</a>`;
+      setActiveLink(true);
+      resetActiveLink();
+      expect(hasActiveLink()).to.be.false;
+      // href is untouched by resetActiveLink
+      expect(anchor.getAttribute('href')).to.equal('https://example.com/');
+    });
+
+    it('getActiveLink returns the matching anchor without stripping its href', () => {
+      resetActiveLink();
+      const currentHref = `${window.location.origin}${window.location.pathname}`;
+      const area = toFragment`<div><a href="${currentHref}">Current page</a></div>`;
+      const found = getActiveLink(area);
+      expect(found instanceof HTMLElement).to.be.true;
+      expect(found.getAttribute('href')).to.equal(currentHref);
+      resetActiveLink();
+    });
   });
 
   it('closeAllDropdowns should close all dropdowns, respecting the globalNavSelector', async () => {
@@ -535,8 +555,8 @@ describe('global navigation utilities', () => {
     });
     it('should set the lnav top position and info if branch banner is sticky', async () => {
       const bannerHeight = '76px';
-      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
       await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
       const header = document.querySelector('header');
       const banner = document.createElement('div');
       banner.id = 'branch-banner-iframe';
