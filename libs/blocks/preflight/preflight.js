@@ -1,5 +1,6 @@
-import { html, render, signal } from '../../deps/htm-preact.js';
-import { createTag, getConfig } from '../../utils/utils.js';
+import { html, render, signal, useEffect } from '../../deps/htm-preact.js';
+import { loadStyle } from '../../utils/utils.js';
+import { suppressPreflightNotification, restorePreflightNotification } from '../../utils/preflight-notification.js';
 import General from './panels/general.js';
 import SEO from './panels/seo.js';
 import Accessibility from './accessibility/accessibility.js';
@@ -8,18 +9,17 @@ import Merch from './panels/merch.js';
 import Performance from './panels/performance.js';
 import Assets from './panels/assets.js';
 
-const HEADING = 'Milo Preflight';
-const IMG_PATH = '/blocks/preflight/img';
-
 const tabs = signal([
-  { title: 'General', selected: true },
-  { title: 'SEO' },
-  { title: 'Martech' },
-  { title: 'M@S' },
-  { title: 'Accessibility' },
-  { title: 'Performance' },
-  { title: 'Assets' },
+  { title: 'General', selected: true, issueCount: 0, hasErrors: false, hasWarnings: false },
+  { title: 'SEO', selected: false, issueCount: 0, hasErrors: false, hasWarnings: false },
+  { title: 'Martech', selected: false, issueCount: 0, hasErrors: false, hasWarnings: false },
+  { title: 'M@S', selected: false, issueCount: 0, hasErrors: false, hasWarnings: false },
+  { title: 'Accessibility', selected: false, issueCount: 0, hasErrors: false, hasWarnings: false },
+  { title: 'Performance', selected: false, issueCount: 0, hasErrors: false, hasWarnings: false },
+  { title: 'Assets', selected: false, issueCount: 0, hasErrors: false, hasWarnings: false },
 ]);
+
+const showHighlightLCP = signal(false);
 
 function setTab(active) {
   tabs.value = tabs.value.map((tab) => {
@@ -41,7 +41,7 @@ function setPanel(title) {
     case 'Accessibility':
       return html`<${Accessibility} />`;
     case 'Performance':
-      return html`<${Performance} />`;
+      return html`<${Performance} showHighlightLCP=${showHighlightLCP} />`;
     case 'Assets':
       return html`<${Assets} />`;
     default:
@@ -49,24 +49,57 @@ function setPanel(title) {
   }
 }
 
-function TabButton(props) {
-  const id = `tab-${props.idx + 1}`;
-  const selected = props.tab.selected === true;
+function NavRailItem(props) {
+  const { tab, idx } = props;
+  const selected = tab.selected === true;
+  let badgeClass = '';
+  if (tab.hasErrors) {
+    badgeClass = 'error';
+  } else if (tab.hasWarnings) {
+    badgeClass = 'warning';
+  }
+
   return html`
     <button
-      id=${id}
-      class=preflight-tab-button
-      key=${props.tab.title}
+      id=${`nav-rail-${idx + 1}`}
+      class=${`preflight-nav-item ${selected ? 'active' : ''}`}
+      key=${tab.title}
       aria-selected=${selected}
-      onClick=${() => setTab(props.tab)}>
-      ${props.tab.title}
+      onClick=${() => setTab(tab)}>
+      <span class=preflight-nav-icon>
+        ${tab.title.charAt(0)}
+      </span>
+      <span>${tab.title}</span>
+      ${tab.issueCount > 0 && html`
+        <span class=${`preflight-nav-badge ${badgeClass}`}>
+          ${tab.issueCount}
+        </span>
+      `}
+    </button>`;
+}
+
+function TopNavItem(props) {
+  const { tab, idx } = props;
+  const selected = tab.selected === true;
+
+  return html`
+    <button
+      id=${`top-nav-${idx + 1}`}
+      class=${`preflight-top-nav-item ${selected ? 'active' : ''}`}
+      key=${tab.title}
+      aria-selected=${selected}
+      onClick=${() => setTab(tab)}>
+      ${tab.title}
+      ${tab.issueCount > 0 && html` (${tab.issueCount})`}
     </button>`;
 }
 
 function TabPanel(props) {
   const id = `panel-${props.idx + 1}`;
-  const labeledBy = `tab-${props.idx + 1}`;
+  const labeledBy = `nav-rail-${props.idx + 1}`;
   const selected = props.tab.selected === true;
+
+  if (!selected) return null;
 
   return html`
     <div
@@ -81,12 +114,22 @@ function TabPanel(props) {
 }
 
 function Preflight() {
+  useEffect(() => {
+    // Suppress notification when modal opens
+    suppressPreflightNotification();
+
+    // Restore notification when component unmounts
+    return () => {
+      restorePreflightNotification();
+    };
+  }, []);
+
   return html`
-    <div class=preflight-heading>
-      <p id=preflight-title>${HEADING}</p>
-      <div class=preflight-tab-button-group role="tablist" aria-labelledby=preflight-title>
-        ${tabs.value.map((tab, idx) => html`<${TabButton} tab=${tab} idx=${idx} />`)}
-      </div>
+    <nav class=preflight-nav-rail role="navigation" aria-label="Preflight sections">
+      ${tabs.value.map((tab, idx) => html`<${NavRailItem} tab=${tab} idx=${idx} />`)}
+    </nav>
+    <div class=preflight-top-nav role="navigation" aria-label="Preflight sections">
+      ${tabs.value.map((tab, idx) => html`<${TopNavItem} tab=${tab} idx=${idx} />`)}
     </div>
     <div class=preflight-content>
       ${tabs.value.map((tab, idx) => html`<${TabPanel} tab=${tab} idx=${idx} />`)}
@@ -94,25 +137,23 @@ function Preflight() {
   `;
 }
 
-function preloadAssets(el) {
-  return new Promise((resolve) => {
-    const { miloLibs, codeRoot } = getConfig();
-    const base = miloLibs || codeRoot;
-    const bg = createTag('img', { src: `${base}${IMG_PATH}/preflight-bg.png` });
-    const pic = createTag('picture', { class: 'bg-img' }, bg);
-    bg.addEventListener('load', () => {
-      resolve(pic);
-      el.insertAdjacentElement('afterbegin', pic);
-
-      // Lazily load other images
-      const check = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/check.svg` });
-      const expand = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/expand.svg` });
-      document.head.append(check, expand);
-    });
+export function updateTabBadges(tabTitle, errorCount, warningCount) {
+  tabs.value = tabs.value.map((tab) => {
+    if (tab.title === tabTitle) {
+      return {
+        ...tab,
+        issueCount: errorCount + warningCount,
+        hasErrors: errorCount > 0,
+        hasWarnings: warningCount > 0 && errorCount === 0,
+      };
+    }
+    return tab;
   });
 }
 
 export default async function init(el) {
-  await preloadAssets(el);
+  // Load the new CSS
+  await loadStyle('/libs/blocks/preflight/preflight.css');
+
   render(html`<${Preflight} />`, el);
 }

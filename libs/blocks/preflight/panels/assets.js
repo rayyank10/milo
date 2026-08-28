@@ -2,6 +2,7 @@ import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
 import { getPreflightResults } from '../checks/preflightApi.js';
 import { isViewportTooSmall } from '../checks/assets.js';
+import { updateTabBadges } from '../preflight.js';
 
 // Define signals for check results and viewport status
 const assetDimensionsResult = signal({
@@ -46,6 +47,11 @@ async function getResults() {
     criticalAssetFailures.value = result.details.criticalAssetFailures || [];
     warningAssetFailures.value = result.details.warningAssetFailures || [];
   }
+
+  // Update badge counts
+  const errorCount = result.status === STATUS.FAIL ? criticalAssetFailures.value.length : 0;
+  const warningCount = warningAssetFailures.value.length;
+  updateTabBadges('Assets', errorCount, warningCount);
 }
 
 /**
@@ -59,6 +65,52 @@ function AssetsItem({ title, description }) {
         <p class="assets-item-description">${description}</p>
       </div>
     </div>`;
+}
+
+/**
+ * Navigate to an asset on the page and show "Back to Preflight" popover
+ */
+async function navigateToAsset(asset) {
+  // Find the asset element on the page
+  let targetElement;
+  if (asset.type === 'image') {
+    targetElement = document.querySelector(`img[src="${asset.src}"]`);
+  } else if (asset.type === 'video') {
+    targetElement = document.querySelector(`video[data-video-source="${asset.src}"]`) || document.querySelector(`video source[src="${asset.src}"]`)?.parentElement;
+  } else if (asset.type === 'mpc') {
+    targetElement = document.querySelector(`iframe[src="${asset.src}"]`);
+  }
+
+  if (!targetElement) return;
+
+  // Close the preflight modal using the modal utility
+  const modal = document.querySelector('#preflight');
+  if (modal) {
+    const { closeModal } = await import('../../modal/modal.js');
+    closeModal(modal, false);
+  }
+
+  // Scroll to the element
+  targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Inject "Back to Preflight" popover at top-left
+  let popover = document.querySelector('.preflight-back-popover');
+  if (!popover) {
+    popover = document.createElement('div');
+    popover.className = 'preflight-back-popover';
+    popover.innerHTML = '<button>Back to Preflight</button>';
+    document.body.appendChild(popover);
+
+    const button = popover.querySelector('button');
+    button.addEventListener('click', () => {
+      popover.remove();
+      // Reopen preflight via the sidekick custom event
+      const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
+      if (sidekick) {
+        sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
+      }
+    });
+  }
 }
 
 /**
@@ -86,7 +138,7 @@ function AssetGroup({ group }) {
     const itemClass = isAboveFoldWithMismatch ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
 
     return html`
-      <div class='${itemClass}' title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'>
+      <div class='${itemClass}' title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}' onclick=${() => navigateToAsset(asset)} style="cursor: pointer;">
         ${asset.type === 'image' && html`<img src='${asset.src}' />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
         ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
@@ -146,6 +198,7 @@ export default function Assets() {
 
   return html`
     <div class="assets-columns">
+      <h2 class="preflight-section-header">Assets</h2>
       <${AssetsItem} ...${assetDimensionsResult.value} />
       ${groups.map((group) => html`<${AssetGroup} group=${group} />`)}
     </div>

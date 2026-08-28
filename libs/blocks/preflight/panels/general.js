@@ -3,6 +3,7 @@ import { STATUS_TO_ICON_MAP, STRUCTURE_TITLES } from '../checks/constants.js';
 import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
+import { updateTabBadges } from '../preflight.js';
 
 const DEF_NOT_FOUND = 'Not found';
 const DEF_NEVER = 'Never';
@@ -28,6 +29,37 @@ const breadcrumbsResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.bread
 const localizationResult = signal({ icon: 'purple', title: 'Links', description: 'Checking...' });
 const localizationIssues = signal([]);
 const localizationClosed = signal(false);
+
+export { localizationResult, localizationIssues };
+
+function updateGeneralBadge() {
+  const allSignals = [
+    navResult,
+    footerResult,
+    regionSelectorResult,
+    georoutingResult,
+    breadcrumbsResult,
+    localizationResult,
+  ];
+
+  let errorCount = 0;
+  let warningCount = 0;
+
+  allSignals.forEach((sig) => {
+    if (sig.value.icon === 'red') {
+      errorCount += 1;
+    } else if (sig.value.icon === 'orange') {
+      warningCount += 1;
+    }
+  });
+
+  // Add localization issue count to error count
+  if (localizationIssues.value.length > 0) {
+    errorCount += localizationIssues.value.length;
+  }
+
+  updateTabBadges('General', errorCount, warningCount);
+}
 
 async function getStructureResults() {
   const signals = [
@@ -55,6 +87,9 @@ async function getStructureResults() {
         description: `Error: ${error.message}`,
       };
     })));
+
+  // Update badge counts
+  updateGeneralBadge();
 }
 
 async function getLocalizationResults() {
@@ -73,6 +108,9 @@ async function getLocalizationResults() {
       description: `Error: ${error.message}`,
     };
   }
+
+  // Update badge counts after localization check completes
+  updateGeneralBadge();
 }
 
 function getAdminUrl(url, type) {
@@ -354,8 +392,9 @@ export default function General() {
 
   return html`
     <div class=preflight-general-content>
-    <p class="preflight-structure-title">Structure</p>
-       <div class=preflight-structure-columns>
+      <h2 class="preflight-section-header">General</h2>
+      <p class="preflight-structure-title">Structure</p>
+      <div class=preflight-structure-columns>
         <div class=preflight-column>
           <${StructureItem} ...${navResult.value} />
           <${StructureItem} ...${footerResult.value} />

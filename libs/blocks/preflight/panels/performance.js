@@ -1,8 +1,7 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import preflightApi from '../checks/preflightApi.js';
 import { STATUS_TO_ICON_MAP } from '../checks/constants.js';
-
-const { getLcpEntry, runChecks } = preflightApi.performance;
+import { updateTabBadges } from '../preflight.js';
 
 // Define signals for each performance check result
 const lcpElResult = signal({ icon: 'purple', title: 'Valid LCP', description: 'Checking...' });
@@ -28,7 +27,7 @@ async function getResults() {
     placeholdersResult,
     iconsResult,
   ];
-  const checks = runChecks(window.location.pathname, document);
+  const checks = preflightApi.performance.runChecks(window.location.pathname, document);
 
   const checkPromises = checks.map((resultOrPromise, index) => {
     const signalResult = signals[index];
@@ -51,6 +50,12 @@ async function getResults() {
   });
 
   await Promise.all(checkPromises);
+
+  // Update badge counts
+  const icons = signals.map((s) => s.value.icon);
+  const errorCount = icons.filter((icon) => icon === 'red').length;
+  const warningCount = icons.filter((icon) => icon === 'orange').length;
+  updateTabBadges('Performance', errorCount, warningCount);
 }
 
 /**
@@ -72,7 +77,7 @@ function PerformanceItem({ icon, title, description }) {
  */
 let clonedLcpSection;
 async function highlightElement(event) {
-  const lcp = await getLcpEntry(window.location.pathname, document);
+  const lcp = await preflightApi.performance.getLcpEntry(window.location.pathname, document);
   if (!lcp) return;
   const lcpSection = lcp.element.closest('.section');
   const tooltip = document.querySelector('.lcp-tooltip-modal');
@@ -111,32 +116,58 @@ const removeHighlight = () => {
 /**
  * Main Panel Component
  */
-export default function Panel() {
+export default function Panel(props) {
+  const { showHighlightLCP: showHighlightLCPSignal } = props;
+
   useEffect(() => {
-    getResults();
-  }, []);
+    async function executeChecks() {
+      await getResults();
+      // Update showHighlightLCP signal based on LCP check result
+      try {
+        const lcpEntry = await preflightApi.performance.getLcpEntry(
+          window.location.pathname,
+          document,
+        );
+        if (showHighlightLCPSignal) {
+          showHighlightLCPSignal.value = !!lcpEntry;
+        }
+      } catch (error) {
+        if (showHighlightLCPSignal) {
+          showHighlightLCPSignal.value = false;
+        }
+      }
+    }
+    executeChecks();
+  }, [showHighlightLCPSignal]);
+
+  const shouldShowHighlightLCP = showHighlightLCPSignal?.value ?? false;
 
   return html`
-    <div class="preflight-columns">
-      <div class="preflight-column">
-        <${PerformanceItem} ...${lcpElResult.value} />
-        <${PerformanceItem} ...${singleBlockResult.value} />
-        <${PerformanceItem} ...${imageSizeResult.value} />
-        <${PerformanceItem} ...${videoPosterResult.value} />
+    <div>
+      <h2 class="preflight-section-header">Performance</h2>
+      <div class="preflight-columns">
+        <div class="preflight-column">
+          <${PerformanceItem} ...${lcpElResult.value} />
+          <${PerformanceItem} ...${singleBlockResult.value} />
+          <${PerformanceItem} ...${imageSizeResult.value} />
+          <${PerformanceItem} ...${videoPosterResult.value} />
+        </div>
+        <div class="preflight-column">
+          <${PerformanceItem} ...${fragmentsResult.value} />
+          <${PerformanceItem} ...${personalizationResult.value} />
+          <${PerformanceItem} ...${placeholdersResult.value} />
+          <${PerformanceItem} ...${iconsResult.value} />
+        </div>
+        <div>Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
+        ${shouldShowHighlightLCP && html`
+          <div>
+            <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
+              Highlight the found LCP section
+            </span>
+          </div>
+        `}
+        <div class="lcp-tooltip-modal"></div>
       </div>
-      <div class="preflight-column">
-        <${PerformanceItem} ...${fragmentsResult.value} />
-        <${PerformanceItem} ...${personalizationResult.value} />
-        <${PerformanceItem} ...${placeholdersResult.value} />
-        <${PerformanceItem} ...${iconsResult.value} />
-      </div>
-      <div>Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
-      <div> 
-        <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
-          Highlight the found LCP section
-        </span> 
-      </div>
-      <div class="lcp-tooltip-modal"></div>
     </div>
   `;
 }

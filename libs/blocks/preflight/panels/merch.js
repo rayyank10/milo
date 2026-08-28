@@ -1,5 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { checkUnpublishedFragments } from '../checks/merch.js';
+import { updateTabBadges } from '../preflight.js';
 
 const wcsElements = signal([]);
 const masFieldsMultipleFragmentWarnings = signal([]);
@@ -56,6 +57,14 @@ function getBlockLocation(element) {
   return Math.round(rect.top + scrollTop);
 }
 
+function updateMerchBadge() {
+  const errorCount = unpublishedFragments.value.length
+    + wcsElements.value.filter((elem) => elem.urlStatus === 'error' || elem.promoCodeStatus === 'expired' || elem.promoCodeStatus === 'not-found').length;
+  const warningCount = masFieldsMultipleFragmentWarnings.value.length
+    + wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined').length;
+  updateTabBadges('M@S', errorCount, warningCount);
+}
+
 function checkMasFieldsMultipleFragments() {
   const main = document.querySelector('main');
   main?.querySelectorAll(`.${MAS_MULTIPLE_FRAGMENTS_HIGHLIGHT}`).forEach((el) => el.classList.remove(MAS_MULTIPLE_FRAGMENTS_HIGHLIGHT));
@@ -96,6 +105,7 @@ function checkMasFieldsMultipleFragments() {
     }
   });
   masFieldsMultipleFragmentWarnings.value = warnings;
+  updateMerchBadge();
 }
 
 async function checkUnpublishedFragmentsForPanel() {
@@ -113,6 +123,7 @@ async function checkUnpublishedFragmentsForPanel() {
       location: firstCard ? getBlockLocation(firstCard) : 0,
     };
   });
+  updateMerchBadge();
 }
 
 function getService() {
@@ -263,6 +274,7 @@ async function checkWcsElements() {
 
   wcsElements.value = elements;
   loading.value = false;
+  updateMerchBadge();
 
   elements.forEach(async (elementData, index) => {
     if (elementData.href) {
@@ -283,6 +295,7 @@ async function checkWcsElements() {
       } else {
         elementData.element.classList.remove('preflight-merch-error');
       }
+      updateMerchBadge();
     }
   });
 
@@ -329,11 +342,13 @@ async function checkWcsElements() {
             elementData.element.classList.add('preflight-merch-error');
           }
           wcsElements.value = [...wcsElements.value];
+          updateMerchBadge();
         } catch {
           wcsElements.value[index].promoCodeStatus = 'not-found';
           wcsElements.value[index].promoExpired = true;
           elementData.element.classList.add('preflight-merch-error');
           wcsElements.value = [...wcsElements.value];
+          updateMerchBadge();
         }
       }
     });
@@ -575,6 +590,7 @@ export default function Merch() {
   if (wcsElements.value.length === 0) {
     return html`
       <div class="merch-panel">
+        <h2 class="preflight-section-header">M@S</h2>
         <${MerchSummary} />
         <${MasFieldsMultipleFragmentSection} />
         <${UnpublishedFragmentsSection} />
@@ -584,6 +600,7 @@ export default function Merch() {
 
   return html`
     <div class="merch-panel">
+      <h2 class="preflight-section-header">M@S</h2>
       <${MerchSummary} />
       <${MasFieldsMultipleFragmentSection} />
       <${UnpublishedFragmentsSection} />

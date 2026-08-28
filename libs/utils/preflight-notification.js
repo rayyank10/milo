@@ -4,7 +4,10 @@ import { loadStyle, getConfig } from './utils.js';
 let wasDismissed = false;
 let sidekickObserver;
 let linkCheckListener;
+let isPreflightOpen = false;
+let suppressedNotificationData = null; // Store notification data when suppressed during creation
 const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
+
 function openPreflightPanel() {
   if (!sidekick) return;
   sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
@@ -21,6 +24,11 @@ function getMasUnpublishedCount(results) {
 async function createPreflightNotification(masUnpublishedCount = 0) {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
+  if (isPreflightOpen) {
+    // Store notification data for later restoration
+    suppressedNotificationData = { masCount: masUnpublishedCount };
+    return;
+  }
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/styles/preflight-notification.css`);
@@ -58,6 +66,26 @@ async function createPreflightNotification(masUnpublishedCount = 0) {
   });
 
   document.body.appendChild(overlay);
+}
+
+export function suppressPreflightNotification() {
+  isPreflightOpen = true;
+  const existingNotification = document.querySelector('.milo-preflight-overlay');
+  if (existingNotification) {
+    existingNotification.style.display = 'none';
+  }
+}
+
+export function restorePreflightNotification() {
+  isPreflightOpen = false;
+  const existingNotification = document.querySelector('.milo-preflight-overlay');
+  if (existingNotification && !wasDismissed) {
+    existingNotification.style.display = '';
+  } else if (suppressedNotificationData && !wasDismissed) {
+    // Recreate notification if it was suppressed during creation
+    createPreflightNotification(suppressedNotificationData.masCount);
+    suppressedNotificationData = null;
+  }
 }
 
 function setupLinkCheckListener() {
